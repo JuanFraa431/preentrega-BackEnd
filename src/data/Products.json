@@ -43,14 +43,5 @@
     "stock": 100,
     "category": "URL de la imagen del producto",
     "id": 5
-  },
-  {
-    "title": "Nombre del Producto 6",
-    "description": "Descripción del Producto",
-    "code": "6",
-    "price": 19.99,
-    "stock": 100,
-    "category": "URL de la imagen del producto",
-    "id": 6
   }
 ]

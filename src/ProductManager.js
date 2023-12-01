@@ -5,7 +5,7 @@ const { json } = require("stream/consumers")
 class ProductManager {
     constructor(){
         this.products = []
-        this.path = "Products.json"
+        this.path = "./data/Products.json"
     }
     async addProduct(title, description,code, price,stock, category ) {
         title = title || undefined;

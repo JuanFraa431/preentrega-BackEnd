@@ -42,8 +42,11 @@ router.post('/', async (req, res) => {
         // Llama al método para agregar un producto en el ProductManager
         await productManager.addProduct(title, description, code, price, stock, category);
 
+        const io = req.app.get("io");
+        io.emit("updateProducts");
+
         // Responde con un estado 201 (creado) y un mensaje de éxito
-        res.status(201).json({ message: 'Producto agregado con éxito' });
+        res.status(201).json({ message: 'Producto agregado con éxito'});
     } catch (error) {
         console.error(error);
         // En caso de error, responde con un estado 500 y un mensaje de error
@@ -65,6 +68,9 @@ router.put('/:pid', async (req, res) => {
         // Llama al método para actualizar un producto en el ProductManager
         await productManager.updateProducts(productId, updatedProductData);
 
+        const io = req.app.get("io");
+        io.emit("updateProducts");
+
         // Responde con un estado 200 y un mensaje de éxito
         return res.status(200).json({ status: "ok", message: "Producto actualizado con éxito." });
     } catch (error) {
@@ -82,6 +88,9 @@ router.delete('/:pid', async (req, res) => {
         // Llama al método para eliminar un producto en el ProductManager
         const result = await productManager.deleteProducts(productId);
 
+        const io = req.app.get("io");
+        io.emit("updateProducts");
+
         // Responde con un estado 200 y el resultado de la operación
         return res.status(200).json(result);
     } catch (error) {
@@ -91,4 +100,6 @@ router.delete('/:pid', async (req, res) => {
     }
 });
 
+
 module.exports = router;
+
