@@ -1,3 +1,4 @@
+// Clase que gestiona operaciones relacionadas con productos utilizando un archivo JSON como base de datos
 const fs = require("fs");
 
 class ProductManager {
@@ -7,6 +8,7 @@ class ProductManager {
         this.path = "./data/Products.json";
     }
 
+    // Método asincrónico que agrega un nuevo producto al archivo JSON
     async addProduct(title, description, code, price, stock, category) {
         try {
             // Valida los datos proporcionados.
@@ -70,9 +72,10 @@ class ProductManager {
         }
     }
 
+    // Método asincrónico que obtiene productos del archivo JSON, opcionalmente limitando la cantidad
     async getProducts(limit) {
         try {
-            // Siempre verifico que exista algo en el archivo.
+            // Siempre verifica que exista algo en el archivo.
             const statsJsonProduct = await fs.promises.stat(this.path);
             if (statsJsonProduct.size === 0) {
                 return [];
@@ -90,16 +93,17 @@ class ProductManager {
         }
     }
 
+    // Método asincrónico que obtiene un producto por su ID del archivo JSON
     async getProductById(id) {
         try {
-            // Siempre verifico que exista algo en el archivo.
+            // Siempre verifica que exista algo en el archivo.
             const statsJsonId = await fs.promises.stat(this.path);
 
             if (statsJsonId.size === 0) {
                 // No hay productos ingresados.
-                return null; // Devuelvo null para indicar que no se encontró ningún producto.
+                return null; // Devuelve null para indicar que no se encontró ningún producto.
             } else {
-                // Busco el id consiguiendo el array que está almacenado en JSON.
+                // Busca el ID consiguiendo el array almacenado en JSON.
                 const searchId = await fs.promises.readFile(this.path, "utf-8");
                 const searchIdParse = JSON.parse(searchId);
                 const productFound = searchIdParse.find((item) => item.id === parseInt(id));
@@ -108,7 +112,7 @@ class ProductManager {
                     return productFound;
                 } else {
                     // No se encontró el producto con el ID especificado.
-                    return null; // Devuelvo null para indicar que no se encontró ningún producto.
+                    return null; // Devuelve null para indicar que no se encontró ningún producto.
                 }
             }
         } catch (error) {
@@ -116,6 +120,7 @@ class ProductManager {
         }
     }
 
+    // Método asincrónico que elimina un producto por su ID del archivo JSON
     async deleteProducts(id) {
         try {
             const statJsonDelete = await fs.promises.stat(this.path);
@@ -139,6 +144,7 @@ class ProductManager {
         }
     }
 
+    // Método asincrónico que actualiza un producto por su ID en el archivo JSON
     async updateProducts(id, updatedProductData) {
         try {
             const statJsonUpdate = await fs.promises.stat(this.path);

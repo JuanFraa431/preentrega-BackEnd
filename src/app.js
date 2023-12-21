@@ -3,12 +3,16 @@ const handlebars = require('express-handlebars')
 const app = express();
 const PORT = 8080 || process.env.PORT
 const { Server } = require('socket.io')
-const ProductManager = require("./ProductManager"); // Importa el módulo ProductManager 
+const ProductManager = require("./dao/Managers/ProductManagerFileSystem"); // Importa el módulo ProductManager 
 const productManager = new ProductManager(); // Crea una instancia de ProductManager
 const fs = require("fs");
+const mongoose = require('mongoose');
+const productosRoutes = require('./routes/productRoutes');
+const Product = require("./dao/models/products");
 
 
 app.use(express.json());
+
 
 // Configurar Handlebars como motor de plantillas
 app.engine('hbs', handlebars.engine({
@@ -28,14 +32,15 @@ app.use('/api/carts', cartRoutes);
 
 app.get('/home', async (req, res) => {
     try {
-        const { limit } = req.query;
-        const products = await productManager.getProducts(limit);
-        res.render('home', { products })
+        const products = await Product.find().lean();
+        console.log(products);
+        res.render('home', { products });
     } catch (error) {
-        // En caso de error, responde con un estado 500 y un mensaje de error
-        res.status(500).json({ status: "error", message: "Error" });
+        console.error(error);
+        res.status(500).render('error', { message: 'Error interno del servidor', error });
     }
 });
+
 
 // Ruta para obtener todos los productos
 app.get('/realtimeproducts', (req, res) => {
@@ -52,15 +57,51 @@ const httpServer = app.listen(PORT, err =>{
 // insatanciando un server io
 const io = new Server(httpServer)
 
+// Establece 'io' como una propiedad de la aplicación para poder acceder a ella en otras partes del código
+app.set('io', io);
+
+// Maneja eventos de conexión en socket.io
 io.on("connection", (socket) => {
     console.log("Nuevo cliente conectado");
-    const sendProductsUpdate = () => {
-        const productsData = fs.readFileSync("./data/Products.json", "utf-8");
-        const products = JSON.parse(productsData);
-        io.emit("updateProducts", products);
+
+    // Función para enviar actualizaciones de productos a los clientes conectados
+    const sendProductsUpdate = async () => {
+        try {
+            // Obtener todos los productos desde MongoDB
+            const products = await Product.find();
+            
+            // Emite un evento "updateProducts" a todos los clientes conectados con la lista de productos
+            io.emit("updateProducts", products);
+        } catch (error) {
+            console.error(error);
+        }
     };
-    sendProductsUpdate(); 
+
+    // Envía una actualización de productos cuando un cliente se conecta
+    sendProductsUpdate();
+
+    // Escucha el evento "updateProducts" desde el cliente y envía una actualización de productos
     socket.on("updateProducts", () => {
         sendProductsUpdate();
     });
+
+    // Llama a sendProductsUpdate al final de la conexión del cliente (no está claro si es necesario)
+    sendProductsUpdate();
 });
+
+// Conexión a MongoDB usando Mongoose
+mongoose.connect('mongodb+srv://juanfraa032:Gusblajua19@cluster0.ddudydc.mongodb.net/Eccomerce', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+});
+
+const db = mongoose.connection;
+
+// Maneja eventos de conexión y error en la base de datos MongoDB
+db.on('error', console.error.bind(console, 'Error de conexión a MongoDB:'));
+db.once('open', () => {
+    console.log('Conexión exitosa a MongoDB');
+});
+
+// Establece las rutas para las operaciones relacionadas con productos
+app.use('/api', productosRoutes);
