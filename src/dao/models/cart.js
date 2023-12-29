@@ -1,14 +1,23 @@
-// Archivo que define el esquema de la colección 'Carts' en MongoDB utilizando Mongoose
 const mongoose = require('mongoose');
+const mongoosePaginate = require('mongoose-paginate-v2');
 
 // Define el esquema del carrito con un campo 'products' que es un array con un valor predeterminado vacío
 const cartSchema = new mongoose.Schema({
-    products: {
-        type: Array,
-        default: []
-    },
-}, { collection: 'Carts' });
+    products: [{
+        product: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Product',
+            required: true
+        },
+        quantity: {
+            type: Number,
+            required: true,
+            mutable: true 
+        }
+    }]
+});
 
+cartSchema.plugin(mongoosePaginate);
 // Crea el modelo 'Cart' basado en el esquema definido
 const Cart = mongoose.model('Cart', cartSchema);
 

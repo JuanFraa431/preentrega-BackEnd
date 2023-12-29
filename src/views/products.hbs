@@ -1,0 +1,49 @@
+<!-- views/products.handlebars -->
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Productos</title>
+</head>
+
+<body>
+
+    <h1>Lista de Productos</h1>
+
+    {{#each products}}
+    <div class="product">
+        <h2>{{this._doc.title}}</h2>
+        <p>{{this._doc.description}}</p>
+        <p>Precio: {{this._doc.price}}</p>
+        <p>Stock: {{this._doc.stock}}</p>
+        <p>Categoría: {{this._doc.category}}</p>
+
+        <!-- Agregar al carrito directamente -->
+        <form action="/api/carts/:cid/products/{{_id}}" method="post">
+            <input type="submit" value="Agregar al Carrito">
+        </form>
+
+        <!-- Ver detalles del producto -->
+        <a href="/products/{{_uid}}">Ver Detalles</a>
+    </div>
+    {{/each}}
+
+    <!-- Paginación -->
+    <div>
+        {{#if hasPrevPage}}
+        <a href="{{prevLink}}">Página anterior</a>
+        {{/if}}
+
+        Página {{page}} de {{totalPages}}
+
+        {{#if hasNextPage}}
+        <a href="{{nextLink}}">Página siguiente</a>
+        {{/if}}
+    </div>
+
+</body>
+
+</html>

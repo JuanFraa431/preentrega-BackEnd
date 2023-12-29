@@ -9,16 +9,22 @@ const fs = require("fs");
 const mongoose = require('mongoose');
 const productosRoutes = require('./routes/productRoutes');
 const Product = require("./dao/models/products");
+const helpers = require('./public/helpers');
 
 
 app.use(express.json());
 
+const hbs = handlebars.create({
+    extname: '.hbs',
+    helpers: helpers
+});
 
 // Configurar Handlebars como motor de plantillas
-app.engine('hbs', handlebars.engine({
+app.engine('hbs',  handlebars.engine({
     extname: '.hbs'
 }))
 app.set('view engine', 'hbs')
+
 
 // Importar las rutas relacionadas con productos y carritos desde archivos externos
 const productRoutes = require('./routes/productRoutes');
@@ -28,6 +34,8 @@ const cartRoutes = require('./routes/cartRoutes');
 app.use(express.static('public'));
 app.use('/api/products', productRoutes);
 app.use('/api/carts', cartRoutes);
+app.use('/products', productRoutes);
+app.use('/carts', cartRoutes);
 
 
 app.get('/home', async (req, res) => {
