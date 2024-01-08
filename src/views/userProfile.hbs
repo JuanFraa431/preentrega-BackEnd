@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil de Usuario</title>
+</head>
+<body>
+    <h1>Perfil de Usuario</h1>
+    
+    {{#if user}}
+        <p>Nombre: {{user.first_name}}</p>
+        <p>Correo electrónico: {{user.email}}</p>
+        <p>Rol: {{user.role}}</p>
+        
+        <!-- Otros detalles del perfil -->
+
+        <form action="/api/sessions/logout">
+            <button type="submit">Cerrar Sesión</button>
+        </form>
+    {{else}}
+        <p>No has iniciado sesión.</p>
+        <p><a href="/login">Inicia sesión</a> para ver tu perfil.</p>
+    {{/if}}
+</body>
+</html>

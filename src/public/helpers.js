@@ -7,5 +7,10 @@ Handlebars.registerHelper('multiply', function (a, b) {
     return a * b;
 });
 
+/* Handlebars.registerHelper('isAdmin', function (role) {
+    // Devuelve true si el rol es 'admin', de lo contrario, false
+    return role === 'admin';
+}); */
+
 // Exporta el objeto Handlebars modificado con el nuevo helper
 module.exports = Handlebars;

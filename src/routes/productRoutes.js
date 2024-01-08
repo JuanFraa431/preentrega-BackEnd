@@ -14,6 +14,7 @@ const mongoosePaginate = require("mongoose-paginate-v2");
 // Ruta para obtener una lista de productos con opción de limitar la cantidad
 router.get("/", async (req, res) => {
     try {
+        const user = req.session.user;
         // Parámetros de consulta
         const { limit = 10, page = 1, category, availability, sort } = req.query;
         const options = {
@@ -41,6 +42,7 @@ router.get("/", async (req, res) => {
 
         // Renderiza la vista de productos
         res.render("products", {
+            user,
             products: products.docs,
             totalPages,
             prevPage,
@@ -62,8 +64,6 @@ router.get("/", async (req, res) => {
 // Función para parsear la cadena de ordenamiento y devolver el objeto de ordenamiento adecuado
 function parseSortQuery(sortQuery) {
     // Implementa la lógica para analizar el parámetro de ordenamiento y devolver el objeto de ordenamiento adecuado
-    // Puedes usar bibliotecas como lodash para simplificar esta tarea.
-    // Aquí, asumiré que sortQuery puede ser "asc" o "desc" y ordenará por el precio.
     return sortQuery === "desc" ? { price: -1 } : { price: 1 };
 }
 

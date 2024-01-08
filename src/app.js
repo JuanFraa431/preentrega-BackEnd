@@ -6,13 +6,34 @@ const { Server } = require('socket.io')
 const ProductManager = require("./dao/Managers/ProductManagerFileSystem"); // Importa el módulo ProductManager 
 const productManager = new ProductManager(); // Crea una instancia de ProductManager
 const fs = require("fs");
+const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const productosRoutes = require('./routes/productRoutes');
+const sessionRoutes = require('./routes/sessionRoutes');
+const viewRoutes = require('./routes/viewRoutes');
 const Product = require("./dao/models/products");
 const helpers = require('./public/helpers');
+const MongoStore = require("connect-mongo")
+const session = require('express-session');
 
 
 app.use(express.json());
+
+app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use(session({
+    store: MongoStore.create({
+        mongoUrl: 'mongodb+srv://juanfraa032:Gusblajua19@cluster0.ddudydc.mongodb.net/Eccomerce', 
+        mongoOptions: {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+        },
+        ttl: 15000000000,
+    }),
+    secret: 'secretJuanfra',
+    resave: true, 
+    saveUninitialized: true
+}))
 
 const hbs = handlebars.create({
     extname: '.hbs',
@@ -36,6 +57,8 @@ app.use('/api/products', productRoutes);
 app.use('/api/carts', cartRoutes);
 app.use('/products', productRoutes);
 app.use('/carts', cartRoutes);
+app.use('/api/sessions', sessionRoutes);
+app.use('/', viewRoutes);
 
 
 app.get('/home', async (req, res) => {
