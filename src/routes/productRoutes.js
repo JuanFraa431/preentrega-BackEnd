@@ -9,12 +9,12 @@ const ProductManagerDb = require("../dao/Managers/ProductManagerDB");
 const productManagerDb = new ProductManagerDb();
 const mongoosePaginate = require("mongoose-paginate-v2");
 
-// Rutas para gestionar operaciones relacionadas con productos
 
 // Ruta para obtener una lista de productos con opción de limitar la cantidad
 router.get("/", async (req, res) => {
     try {
-        const user = req.session.user;
+        
+        const user = req.user;
         // Parámetros de consulta
         const { limit = 10, page = 1, category, availability, sort } = req.query;
         const options = {
@@ -29,7 +29,7 @@ router.get("/", async (req, res) => {
         if (availability) filters.availability = availability;
 
         // Realiza la búsqueda con paginación y filtros
-        const products = await Product.paginate(filters, options);
+        const products = await Product.paginate(filters, { ...options, sort: { _id: 1 } });
 
         // Construye la respuesta según los requisitos
         const totalPages = products.totalPages;

@@ -15,6 +15,11 @@ const Product = require("./dao/models/products");
 const helpers = require('./public/helpers');
 const MongoStore = require("connect-mongo")
 const session = require('express-session');
+const passport = require('passport');
+const User = require('./dao/models/users');
+const { initializePassportGitHub, initializePassportLocal } = require('./config/passport.config')
+
+
 
 
 app.use(express.json());
@@ -31,19 +36,43 @@ app.use(session({
         ttl: 15000000000,
     }),
     secret: 'secretJuanfra',
-    resave: true, 
-    saveUninitialized: true
+    resave: false, 
+    saveUninitialized: false
 }))
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 const hbs = handlebars.create({
     extname: '.hbs',
-    helpers: helpers
+    helpers: helpers,
+    runtimeOptions: {
+        allowProtoPropertiesByDefault: true,
+        allowProtoMethodsByDefault: true,
+    },
+});
+
+// Configurar la estrategia de GitHub para Passport
+initializePassportGitHub()
+
+// Configurar la estrategia local para Passport
+initializePassportLocal()
+// Serialize y deserialize user para mantener la sesión
+passport.serializeUser((user, done) => {
+    done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+    try {
+        const user = await User.findById(id);
+        done(null, user);
+    } catch (error) {
+        done(error);
+    }
 });
 
 // Configurar Handlebars como motor de plantillas
-app.engine('hbs',  handlebars.engine({
-    extname: '.hbs'
-}))
+app.engine('hbs', hbs.engine);
 app.set('view engine', 'hbs')
 
 
@@ -59,6 +88,8 @@ app.use('/products', productRoutes);
 app.use('/carts', cartRoutes);
 app.use('/api/sessions', sessionRoutes);
 app.use('/', viewRoutes);
+
+
 
 
 app.get('/home', async (req, res) => {

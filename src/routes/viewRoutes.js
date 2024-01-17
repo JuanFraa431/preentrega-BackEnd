@@ -1,8 +1,16 @@
 // viewRoutes.js
-
 const express = require('express');
 const router = express.Router();
 const session = require('express-session');
+//const { isAuthenticated } = require('../utils/jwt');
+
+
+const isAuthenticated = (req, res, next) => {
+    if (req.isAuthenticated()) {
+        return next();
+    }
+    res.redirect('/login'); 
+};
 
 
 // Ruta para el formulario de login
@@ -17,15 +25,19 @@ router.get('/register', (req, res) => {
     res.render('registerForm');
 });
 
+
+
 // Ruta para renderizar el perfil del usuario (requiere inicio de sesión)
-router.get('/userProfile', (req, res) => {
+router.get('/userProfile', isAuthenticated, (req, res) => {
     // Verifica si el usuario está autenticado
-    if (req.session.user) {
-        // Renderiza el perfil del usuario con los datos del usuario en req.session.user
-        res.render('userProfile', { user: req.session.user }); // Asegúrate de tener un archivo profile.hbs en tu carpeta de vistas
+    if (req.user) {
+        // Renderiza el perfil del usuario con los datos del usuario en req.user
+        res.render('userProfile', { user: req.user });
+        console.log(req.user);
     } else {
         // Si no está autenticado, redirige al formulario de inicio de sesión
         res.redirect('/login');
+        console.log(req.user);
     }
 });
 
