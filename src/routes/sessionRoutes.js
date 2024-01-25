@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const session = require('express-session');
 const passport = require('passport');
-
+const User = require('../dao/models/users');
 
 
 // Ruta para el registro de usuarios
@@ -41,6 +41,37 @@ router.get('/logout', (req, res) => {
         res.redirect('/login'); 
     });
 });
+router.get('/current', async (req, res) => {
+    try {
+        // Verificar si el usuario está autenticado
+        if (req.isAuthenticated()) {
+            const currentUser = req.user;
+
+            // Obtener el usuario actual desde la base de datos (ajusta según tu modelo)
+            const userFromDB = await User.findById(currentUser._id);
+
+            // Verificar el rol del usuario
+            if (userFromDB.role === 'admin') {
+                // Si el rol es admin, obtener todos los usuarios
+                const allUsers = await User.find();
+
+                // Renderizar la vista con la información de los usuarios
+                res.render('current', { user: userFromDB, isAdmin: true, users: allUsers });
+            } else {
+                // Si el rol es user, mostrar un mensaje de acceso denegado
+                res.render('current', { user: userFromDB, isAdmin: false, message: 'Usted no tiene rango admin para acceder a este sitio' });
+            }
+        } else {
+            // Si no está autenticado, renderizar la vista con un mensaje apropiado
+            res.render('current', { user: null });
+        }
+    } catch (error) {
+        console.error('Error al obtener el usuario actual:', error);
+        res.status(500).render('error', { message: 'Error interno del servidor' });
+    }
+});
+
+module.exports = router;
 
 
 module.exports = router;

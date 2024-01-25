@@ -1,9 +1,8 @@
-const passport = require('passport')
-const GitHubStrategy = require('passport-github2')
-const User = require("../dao/models/users")
+const passport = require('passport');
+const GitHubStrategy = require('passport-github2');
 const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcrypt');
-// const { createToken, authenticationToken } = require('../utils/jwt')
+const User = require('../dao/models/users');
 
 exports.initializePassportGitHub = () => {
     passport.use(new GitHubStrategy({
@@ -34,18 +33,16 @@ exports.initializePassportGitHub = () => {
             return done(error, null);
         }
     }));
-}
+};
 
-//----------------------------------------------------------
-
-exports.initializePassportLocal = () =>{
+exports.initializePassportLocal = () => {
     passport.use('local.register', new LocalStrategy(
         { usernameField: 'email', passReqToCallback: true },
         async (req, email, password, done) => {
             try {
-                const { first_name } = req.body;
+                const { first_name, last_name, age } = req.body;
 
-                if (!first_name || !email || !password) {
+                if (!first_name || !last_name || !email || !password) {
                     return done(null, false, 'Faltan completar campos obligatorios');
                 }
 
@@ -55,17 +52,17 @@ exports.initializePassportLocal = () =>{
                 }
 
                 const hashedPassword = await bcrypt.hash(password, 10);
-                const role = (email === "adminCoder@coder.com") ? "admin" : "user";
 
                 const newUser = {
                     first_name,
+                    last_name,
                     email,
+                    age,
                     password: hashedPassword,
-                    role: role
+                    role: 'user'
                 };
 
                 const result = await User.create(newUser);
-                // const token = createToken({id: result._id})
                 return done(null, result);
             } catch (error) {
                 return done(error);
@@ -92,7 +89,6 @@ exports.initializePassportLocal = () =>{
                 }
 
                 console.log('Inicio de sesión exitoso');
-                // const token = createToken({id: user._id, role: user.role })
                 return done(null, user);
             } catch (error) {
                 console.error('Error durante el inicio de sesión:', error);
@@ -100,4 +96,4 @@ exports.initializePassportLocal = () =>{
             }
         }
     ));
-}
+};
