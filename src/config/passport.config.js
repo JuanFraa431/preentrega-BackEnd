@@ -53,13 +53,19 @@ exports.initializePassportLocal = () => {
 
                 const hashedPassword = await bcrypt.hash(password, 10);
 
+                let role = 'user';
+
+                if (email === 'adminCoder@coder.com') {
+                    role = 'admin';
+                }
+
                 const newUser = {
                     first_name,
                     last_name,
                     email,
                     age,
                     password: hashedPassword,
-                    role: 'user'
+                    role
                 };
 
                 const result = await User.create(newUser);
