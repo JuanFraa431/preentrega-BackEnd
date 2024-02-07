@@ -1,7 +1,6 @@
 const express = require("express");
 const handlebars = require('express-handlebars')
 const app = express();
-const PORT = 8080 || process.env.PORT
 const { Server } = require('socket.io')
 const ProductManager = require("./dao/Managers/ProductManagerFileSystem"); // Importa el módulo ProductManager 
 const productManager = new ProductManager(); // Crea una instancia de ProductManager
@@ -17,9 +16,12 @@ const MongoStore = require("connect-mongo")
 const session = require('express-session');
 const passport = require('passport');
 const User = require('./dao/models/users');
-const { initializePassportGitHub, initializePassportLocal } = require('./config/passport.config')
+const sessionController = require('./controllers/sessionController');
+const config = require('./config/config');
 
-
+const PORT = config.PORT;
+const MONGO_URL = config.MONGO_URL;
+const SESSION_SECRET = config.SESSION_SECRET;
 
 
 app.use(express.json());
@@ -28,20 +30,23 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(session({
     store: MongoStore.create({
-        mongoUrl: 'mongodb+srv://juanfraa032:Gusblajua19@cluster0.ddudydc.mongodb.net/Eccomerce', 
+        mongoUrl:MONGO_URL, 
         mongoOptions: {
             useNewUrlParser: true,
             useUnifiedTopology: true,
         },
         ttl: 15000000000,
     }),
-    secret: 'secretJuanfra',
+    secret: SESSION_SECRET,
     resave: false, 
     saveUninitialized: false
 }))
 
 app.use(passport.initialize());
 app.use(passport.session());
+
+sessionController;
+
 
 const hbs = handlebars.create({
     extname: '.hbs',
@@ -52,24 +57,7 @@ const hbs = handlebars.create({
     },
 });
 
-// Configurar la estrategia de GitHub para Passport
-initializePassportGitHub()
-
-// Configurar la estrategia local para Passport
-initializePassportLocal()
-// Serialize y deserialize user para mantener la sesión
-passport.serializeUser((user, done) => {
-    done(null, user.id);
-});
-
-passport.deserializeUser(async (id, done) => {
-    try {
-        const user = await User.findById(id);
-        done(null, user);
-    } catch (error) {
-        done(error);
-    }
-});
+//aca iba serializate dessealizate y los github y local
 
 // Configurar Handlebars como motor de plantillas
 app.engine('hbs', hbs.engine);
@@ -152,7 +140,7 @@ io.on("connection", (socket) => {
 });
 
 // Conexión a MongoDB usando Mongoose
-mongoose.connect('mongodb+srv://juanfraa032:Gusblajua19@cluster0.ddudydc.mongodb.net/Eccomerce', {
+mongoose.connect(MONGO_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 });

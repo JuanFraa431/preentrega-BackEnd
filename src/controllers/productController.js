@@ -1,4 +1,3 @@
-// controllers/productosController.js
 const Product = require('../dao/models/products');
 
 // Función que obtiene todos los productos de la base de datos y los devuelve como respuesta en formato JSON.
