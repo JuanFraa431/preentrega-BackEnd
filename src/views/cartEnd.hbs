@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productos en el carrito</title>
+    <!-- Agrega el enlace al CDN de Bootstrap para usar sus estilos -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Productos en el carrito</h1>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Precio</th>
+                    <th>Cantidad</th>
+                    <th>Subtotal</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each productsInfo}}
+                <tr>
+                    <td>{{this.title}}</td>
+                    <td>{{this.price}}</td>
+                    <td>{{this.quantity}}</td>
+                    <td>{{this.subtotal}}</td>
+                    <td> <button onclick="eliminarProductoCarrito('{{this.cartId}}', '{{this.id}}')" class="btn btn-danger">Eliminar Producto</button></td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+        <p>Total: {{totalAmount}}</p>
+
+        <form id="finalizarCompraForm" method="POST">
+            <button type="submit" class="btn btn-primary">Finalizar compra</button>
+        </form>
+    </div>
+    <script src="/index.js"></script>
+</body>
+
+</html>
