@@ -27,17 +27,6 @@ async function generateUniqueCode() {
     }
     return code;
 }
-async function findCartByUserId(userId) {
-    try {
-        const cart = await Cart.findOne({ userId: userId });
-        return cart;
-    } catch (error) {
-        console.error('Error al buscar el carrito:', error);
-        throw new Error('Error al buscar el carrito en la base de datos.');
-    }
-}
-
-router.get('/:uid', cartController.getCartByUserId);
 
 
 router.post('/:cid/purchase', async (req, res) => {
@@ -100,7 +89,7 @@ router.get('/', async (req, res) => {
 router.post('/:uid', isAuthenticated, async (req, res) => {
     const userId = req.params.uid; 
     try {
-        const existingCart = await findCartByUserId(userId);
+        const existingCart = await Cart.findOne({ UserId: userId })
         if (!existingCart) {
             const newCart = await Cart.create({ products: [], UserId: userId }); 
             return res.status(201).json({ status: 'ok', message: 'Carrito creado con éxito', data: newCart });
@@ -108,6 +97,7 @@ router.post('/:uid', isAuthenticated, async (req, res) => {
         return res.status(200).json({ status: 'ok', message: 'Ya existe un carrito asociado a este usuario', data: existingCart });
     } catch (error) {
         console.error(error);
+        
         res.status(500).json({ status: 'error', message: 'Error interno del servidor.' });
     }
 });
@@ -166,13 +156,14 @@ router.get('/:cid/purchase', async (req, res) => {
         res.status(500).json({ status: 'error', message: 'Error interno del servidor.' });
     }
 });
+
 router.delete('/:cid/products/:pid', async (req, res) => {
     try {
         const cartId = req.params.cid;
         const productId = req.params.pid;
         const cart = await Cart.findById(cartId);
         if (!cart) {
-            return res.status(404).json({ status: 'error', message: `Carrito con ID ${cartId} no encontrado.` });
+            return res.status(404).json({ status: 'error', message:` Carrito con ID ${cartId} no encontrado.`});
         }
         const productIndex = cart.products.findIndex((item) => item.product.toString() === productId);
         if (productIndex !== -1) {
@@ -191,6 +182,7 @@ router.delete('/:cid/products/:pid', async (req, res) => {
         return res.status(500).json({ status: 'error', message: 'Error interno del servidor.' });
     }
 });
+
 router.put('/:cid/products/:pid', async (req, res) => {
     try {
         const cartId = req.params.cid;
@@ -216,6 +208,7 @@ router.put('/:cid/products/:pid', async (req, res) => {
         return res.status(500).json({ status: 'error', message: 'Error interno del servidor.' });
     }
 });
+
 router.delete('/:cid', async (req, res) => {
     try {
         const cartId = req.params.cid;
@@ -235,7 +228,7 @@ router.delete('/:cid', async (req, res) => {
 router.get('/:uid', async (req, res) => {
     try {
         const userId = req.params.uid;
-        const cart = await Cart.findOne({ userId: userId });
+        const cart = await Cart.findOne({ UserId: userId });
         if (!cart) {
             return res.status(404).json({ status: 'error', message: 'Tu carrito está vacío.' });
         }

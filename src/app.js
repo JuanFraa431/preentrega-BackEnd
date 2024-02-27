@@ -107,12 +107,19 @@ const httpServer = app.listen(PORT, err =>{
 // insatanciando un server io
 const io = new Server(httpServer)
 
-// Establece 'io' como una propiedad de la aplicación para poder acceder a ella en otras partes del código
 app.set('io', io);
 
-// Maneja eventos de conexión en socket.io
 io.on("connection", (socket) => {
     console.log("Nuevo cliente conectado");
+
+    socket.on("productDeleted", async function(productId) {
+        try {
+            await Product.findByIdAndDelete(productId);
+            sendProductsUpdate();
+        } catch (error) {
+            console.error(error);
+        }
+    });
 
     // Función para enviar actualizaciones de productos a los clientes conectados
     const sendProductsUpdate = async () => {

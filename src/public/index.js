@@ -101,24 +101,24 @@ async function updateProducts(updatedProducts) {
 
 
 async function addToCart(productId, userId) {
-    console.log(productId);
-    console.log(userId);
     try {
         const cartResponse = await fetch(`/api/carts/${userId}`);
+        console.log(cartResponse)
         const cartData = await cartResponse.json();
         let cartId;
-        if (cartData.cart) {
-            cartId = cartData.cart._id;
+        console.log(cartData);
+        if (cartData.status == "ok") {
+            cartId = cartData.data._id;
         } else {
-            const newCartResponse = await fetch(`/api/carts/${userId}`, {
+            const newCartResponse =  await fetch(`/api/carts/${userId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ userId })
             });
-            const newCartData = await newCartResponse.json();
-            cartId = newCartData.cart._id;
+            const newCartData =  await newCartResponse.json();
+            cartId = newCartData.carts._id;
         }
         const addToCartResponse = await fetch(`/api/carts/${cartId}/product/${productId}`, {
             method: 'POST',
@@ -133,6 +133,7 @@ async function addToCart(productId, userId) {
         alert('Hubo un problema al agregar el producto al carrito.');
     }
 }
+
 function redirectToCart(userId) {
     fetch(`/api/carts/${userId}`)
         .then(response => {
@@ -142,34 +143,63 @@ function redirectToCart(userId) {
             return response.json();
         })
         .then(data => {
-            const cartId = data.cart._id;
-            window.location.href = `/api/carts/${cartId}/purchase`;
+            const cartId = data.data._id
+            window.location.href = `/api/carts/${cartId}/purchase`
         })
         .catch(error => {
             console.error('Error al redirigir al carrito:', error);
             alert(error.message);
         });
 }
-async function eliminarProductoCarrito(cartId, productId) {
+
+async function eliminarProductoCarrito(cartId, productId) { 
+    const precioElement = document.getElementById(`precio-${productId}`);
+    const precio = parseInt(precioElement.textContent);
+
     try {
         const response = await fetch(`/api/carts/${cartId}/products/${productId}`, {
             method: 'DELETE'
         });
+
         if (response.ok) {
             const data = await response.json();
-            const { quantity, price } = data.product;
-            const cantidadElement = document.getElementById(`cantidad-${productId}`);
-            const precioElement = document.getElementById(`precio-${productId}`);
-            const subtotalElement = document.getElementById(`subtotal-${productId}`);
-            cantidadElement.textContent = quantity;
-            precioElement.textContent = price;
-            subtotalElement.textContent = quantity * price;
-            if (quantity === 0) {
+            const productData = data.data.products; 
+
+            const index = productData.findIndex(item => item.product === productId);
+
+            if (index !== -1) {
+                const cantidadElement = document.getElementById(`cantidad-${productId}`);
+                cantidadElement.textContent = productData[index].quantity;
+
+                const subtotalElement = document.getElementById(`subtotal-${productId}`);
+                subtotalElement.textContent = productData[index].quantity * precio;
+
+                const totalElement = document.getElementById("total");
+                const totalActual = parseInt(totalElement.textContent.replace("Total: ", ""));
+                const nuevoTotal = totalActual - precio;
+                totalElement.textContent = "Total: " + nuevoTotal;
+
+                if (productData[index].quantity === 0) {
+                    const filaProducto = document.getElementById(`fila-${productId}`);
+                    const totalElement = document.getElementById("total");
+                    const totalActual = parseInt(totalElement.textContent.replace("Total: ", ""));
+                    const nuevoTotal = totalActual - precio;
+                    totalElement.textContent = "Total: " + nuevoTotal;
+                    filaProducto.remove();
+                }
+
+            } else {
                 const filaProducto = document.getElementById(`fila-${productId}`);
+                const totalElement = document.getElementById("total");
+                const totalActual = parseInt(totalElement.textContent.replace("Total: ", ""));
+                const nuevoTotal = totalActual - precio;
+                totalElement.textContent = "Total: " + nuevoTotal;
                 filaProducto.remove();
             }
+
         } else {
             console.error('Error al eliminar el producto:', response.statusText);
+            
         }
     } catch (error) {
         console.error('Error al eliminar el producto:', error);
