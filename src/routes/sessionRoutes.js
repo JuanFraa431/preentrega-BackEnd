@@ -3,7 +3,9 @@ const router = express.Router();
 const session = require('express-session');
 const passport = require('passport');
 const User = require('../dao/models/users');
+const { customizeError } = require("../middleware/errorHandler");
 
+//---------------------------------------------------------------------------------------
 
 // Ruta para el registro de usuarios
 router.post('/register', async (req, res, next) => {
@@ -67,7 +69,7 @@ router.get('/current', async (req, res) => {
         }
     } catch (error) {
         console.error('Error al obtener el usuario actual:', error);
-        res.status(500).render('error', { message: 'Error interno del servidor' });
+        res.status(500).render('error', { message: customizeError('INTERNAL_SERVER_ERROR') });
     }
 });
 

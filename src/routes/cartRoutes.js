@@ -9,6 +9,7 @@ const Product = require('../dao/models/products');
 const Ticket = require('../dao/models/ticket');
 const isAuthenticated = require('../middleware/auth.middleware')
 const cartController = require('../controllers/cartController');
+const { customizeError } = require("../middleware/errorHandler");
 
 //---------------------------------------------------------------------------------------
 
@@ -70,7 +71,7 @@ router.post('/:cid/purchase', async (req, res) => {
         return res.status(200).json({ status: 'success', message: 'Compra finalizada con éxito.', data: ticket });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ status: 'error', message: 'Error interno del servidor.' });
+        return res.status(500).json({ status: 'error', message: customizeError('INTERNAL_SERVER_ERROR') });
     }
 });
 
@@ -82,7 +83,7 @@ router.get('/', async (req, res) => {
         res.status(200).json({ status: 'success', message: 'Carritos encontrados.', data: carts });
     } catch (error) {
         console.error('Error al obtener los carritos:', error);
-        res.status(500).json({ status: 'error', message: 'Error interno del servidor.' });
+        res.status(500).json({ status: 'error', message: customizeError('INTERNAL_SERVER_ERROR') });
     }
 });
 
@@ -98,7 +99,7 @@ router.post('/:uid', isAuthenticated, async (req, res) => {
     } catch (error) {
         console.error(error);
         
-        res.status(500).json({ status: 'error', message: 'Error interno del servidor.' });
+        res.status(500).json({ status: 'error', message: customizeError('INTERNAL_SERVER_ERROR') });
     }
 });
 
@@ -127,7 +128,7 @@ router.post('/:cid/product/:pid', async (req, res) => {
         return res.status(200).json({ status: 'ok', message: 'Producto agregado al carrito con éxito.', data: cart });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ status: 'error', message: 'Error interno del servidor.' });
+        return res.status(500).json({ status: 'error', message: customizeError('INTERNAL_SERVER_ERROR') });
     }
 });
 
@@ -153,7 +154,7 @@ router.get('/:cid/purchase', async (req, res) => {
         res.render('cartEnd', { productsInfo, totalAmount, cartId}); 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ status: 'error', message: 'Error interno del servidor.' });
+        res.status(500).json({ status: 'error', message: customizeError('INTERNAL_SERVER_ERROR') });
     }
 });
 
@@ -179,7 +180,7 @@ router.delete('/:cid/products/:pid', async (req, res) => {
         }
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ status: 'error', message: 'Error interno del servidor.' });
+        return res.status(500).json({ status: 'error', message: customizeError('INTERNAL_SERVER_ERROR') });
     }
 });
 
@@ -205,7 +206,7 @@ router.put('/:cid/products/:pid', async (req, res) => {
         }
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ status: 'error', message: 'Error interno del servidor.' });
+        return res.status(500).json({ status: 'error', message: customizeError('INTERNAL_SERVER_ERROR') });
     }
 });
 
@@ -221,7 +222,7 @@ router.delete('/:cid', async (req, res) => {
         return res.status(200).json({ status: 'ok', message: 'Carrito vaciado con éxito.', data: cart });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ status: 'error', message: 'Error interno del servidor.' });
+        return res.status(500).json({ status: 'error', message: customizeError('INTERNAL_SERVER_ERROR') });
     }
 });
 
@@ -235,7 +236,7 @@ router.get('/:uid', async (req, res) => {
         return res.status(200).json({ status: 'ok', message: 'Carrito encontrado.', data: cart });
     } catch (error) {
         console.error('Error al obtener el carrito:', error);
-        res.status(500).json({ status: 'error', message: 'Error interno del servidor.' });
+        res.status(500).json({ status: 'error', message: customizeError('INTERNAL_SERVER_ERROR') });
     }
 });
 

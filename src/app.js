@@ -10,6 +10,7 @@ const mongoose = require('mongoose');
 const productosRoutes = require('./routes/productRoutes');
 const sessionRoutes = require('./routes/sessionRoutes');
 const viewRoutes = require('./routes/viewRoutes');
+const mockingProductsRoute = require('./routes/mockingProductsRoutes')
 const Product = require("./dao/models/products");
 const helpers = require('./public/helpers');
 const MongoStore = require("connect-mongo")
@@ -65,6 +66,7 @@ app.set('view engine', 'hbs')
 
 
 // Importar las rutas relacionadas con productos y carritos desde archivos externos
+app.use('/mockingproducts', mockingProductsRoute);
 const productRoutes = require('./routes/productRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 
@@ -76,7 +78,6 @@ app.use('/products', productRoutes);
 app.use('/carts', cartRoutes);
 app.use('/api/sessions', sessionRoutes);
 app.use('/', viewRoutes);
-
 
 
 
