@@ -66,11 +66,12 @@ app.set('view engine', 'hbs')
 
 
 // Importar las rutas relacionadas con productos y carritos desde archivos externos
-app.use('/mockingproducts', mockingProductsRoute);
+
 const productRoutes = require('./routes/productRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 
 // Configuración de archivos estáticos
+app.use('/mockingproducts', mockingProductsRoute);
 app.use(express.static('public'));
 app.use('/api/products', productRoutes);
 app.use('/api/carts', cartRoutes);
@@ -104,6 +105,15 @@ const httpServer = app.listen(PORT, err =>{
     if (err)  console.log(err)
     console.log(`Escuchando en el puerto ${PORT}`)
 })
+
+const logger = require('./utils/logger.js');
+app.get('/loggerTest', (req, res) => {
+    logger.debug('Debug');
+    logger.info('Info');
+    logger.warn('Warning');
+    logger.error('Error'); 
+    res.send('Logs enviados al logger');
+});
 
 // insatanciando un server io
 const io = new Server(httpServer)
