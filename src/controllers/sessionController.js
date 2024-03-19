@@ -1,11 +1,11 @@
 const passport = require('passport');
 const bcrypt = require('bcrypt');
-const User = require('../dao/models/users'); 
+const User = require('../dao/models/users');
 const { initializePassportGitHub, initializePassportLocal } = require('../config/passport.config')
 
+initializePassportLocal()
 initializePassportGitHub()
 
-initializePassportLocal()
 
 passport.serializeUser((user, done) => {
     done(null, user.id);
@@ -29,7 +29,6 @@ const sessionController = {
             if (!user) {
                 return res.status(400).json({ message: info || 'Error al registrar usuario' });
             }
-            // Si el registro es exitoso, inicia sesión
             req.login(user, (err) => {
                 if (err) {
                     return res.status(500).json({ message: 'Error interno del servidor' });
@@ -47,7 +46,6 @@ const sessionController = {
             if (!user) {
                 return res.status(401).json({ message: info || 'Credenciales inválidas' });
             }
-            // Si la autenticación es exitosa, inicia sesión
             req.login(user, (err) => {
                 if (err) {
                     return res.status(500).json({ message: 'Error interno del servidor' });

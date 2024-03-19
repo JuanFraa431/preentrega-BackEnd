@@ -10,6 +10,7 @@ const mongoose = require('mongoose');
 const productosRoutes = require('./routes/productRoutes');
 const sessionRoutes = require('./routes/sessionRoutes');
 const viewRoutes = require('./routes/viewRoutes');
+const nodemailer = require('nodemailer');
 const mockingProductsRoute = require('./routes/mockingProductsRoutes')
 const Product = require("./dao/models/products");
 const helpers = require('./public/helpers');
@@ -77,6 +78,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/carts', cartRoutes);
 app.use('/products', productRoutes);
 app.use('/carts', cartRoutes);
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/api/sessions', sessionRoutes);
 app.use('/', viewRoutes);
 
