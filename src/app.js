@@ -20,10 +20,32 @@ const passport = require('passport');
 const User = require('./dao/models/users');
 const sessionController = require('./controllers/sessionController');
 const config = require('./config/config');
+const swaggerMiddleware = require('./middleware/swagger');
+
+const swaggerUiExpress = require('swagger-ui-express')
+const swaggerJsDoc = require('swagger-jsdoc')
 
 const PORT = config.PORT;
 const MONGO_URL = config.MONGO_URL;
 const SESSION_SECRET = config.SESSION_SECRET;
+
+
+// Define las opciones de configuración para Swagger
+const options = {
+    swaggerDefinition: {
+        openapi: '3.0.1',
+        info: {
+            title: 'API Documentation',
+            version: '1.0.0',
+            description: 'Documentación de la API de tu proyecto final',
+        },
+    },
+    apis: ['./docs/**/*.yaml'], 
+};
+
+const specs = swaggerJsDoc(options);
+// Usa el middleware de Swagger
+app.use('/apidocs', swaggerUiExpress.serve, swaggerUiExpress.setup(specs))
 
 
 app.use(express.json());
