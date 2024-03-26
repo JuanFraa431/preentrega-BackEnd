@@ -1,4 +1,3 @@
-// Archivo que define el esquema de la colección 'Products' en MongoDB utilizando Mongoose
 const mongoose = require('mongoose');
 const mongoosePaginate = require('mongoose-paginate-v2');
 
@@ -30,6 +29,11 @@ const productSchema = new mongoose.Schema({
     },
     category: {
         type: String,
+        required: true,
+    },
+    owner: {
+        type: mongoose.Schema.Types.ObjectId, // Tipo ObjectId para almacenar el _id del usuario
+        ref: 'User', // Referencia al modelo de usuario
         required: true,
     },
 }, { collection: 'Products' });

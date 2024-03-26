@@ -30,7 +30,9 @@ const userSchema = new Schema({
     role: {
         type: String,
         default: 'user'
-    }
+    },
+    resetPasswordToken: String, // Nuevo campo para almacenar el token de restablecimiento de contraseña
+    resetPasswordExpires: Date // Nuevo campo para almacenar la fecha de expiración del token
 });
 
 // Agrega la paginación

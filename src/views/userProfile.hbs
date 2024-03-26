@@ -28,6 +28,13 @@
 
                     <a href="api/sessions/current" class="btn btn-primary mt-3">Ver Información Actual</a>
                     <a href="/products" class="btn btn-warning mt-3">Ver Listado de productos</a>
+                    <!-- Condición para mostrar el botón solo a administradores y premium -->
+                    {{#if isAdmin}}
+                        <a href="/userEdit" class="btn btn-secondary mt-3">Editar Perfil</a>
+                    {{/if}}
+                    {{#if isPremium}}
+                        <a href="/userEdit" class="btn btn-secondary mt-3">Editar Perfil</a>
+                    {{/if}}
                 </div>
             </div>
             <br>

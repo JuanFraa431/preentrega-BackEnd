@@ -6,6 +6,7 @@ const User = require('../dao/models/users');
 const { customizeError } = require("../middleware/errorHandler");
 const { sendPasswordResetEmail } = require('../utils/mailService.js');
 const { generateResetToken } = require('../utils/tokens.js');
+const bcrypt = require('bcrypt');
 
 //---------------------------------------------------------------------------------------
 
@@ -75,28 +76,38 @@ router.get('/current', async (req, res) => {
     }
 });
 
+// Ruta para el restablecimiento de contraseña (página de formulario)
 router.get('/reset-password/:token', async (req, res) => {
     const { token } = req.params;
     res.render('reset-password', { token });
 });
 
+// Ruta para procesar el restablecimiento de contraseña
 router.post('/reset-password/:token', async (req, res) => {
     const { token } = req.params;
     const { password, confirm_password } = req.body;
 
     try {
-        // Verifica si el token es válido y encuentra al usuario correspondiente
-        const user = await User.findOne({ resetPasswordToken: token });
+        // Buscar al usuario por el token de restablecimiento de contraseña
+        const user = await User.findOne({
+            resetPasswordToken: token,
+            resetPasswordExpires: { $gt: Date.now() }
+        });
 
         if (!user) {
             return res.status(404).json({ message: 'Token de restablecimiento de contraseña inválido o expirado' });
         }
 
+        // Validar las contraseñas
         if (password !== confirm_password) {
             return res.status(400).json({ message: 'Las contraseñas no coinciden' });
         }
 
-        user.password = password;
+        // Encriptar la nueva contraseña
+        const hashedPassword = await bcrypt.hash(password, 10); // 10 es el número de rondas de hashing
+
+        // Establecer la nueva contraseña encriptada y eliminar el token de restablecimiento
+        user.password = hashedPassword;
         user.resetPasswordToken = undefined;
         user.resetPasswordExpires = undefined;
         await user.save();
@@ -108,23 +119,25 @@ router.post('/reset-password/:token', async (req, res) => {
     }
 });
 
+// Ruta para solicitar restablecimiento de contraseña (envío de correo)
 router.post('/reset-password', async (req, res) => {
     const { email } = req.body;
 
-
     try {
+        // Buscar al usuario por correo electrónico
         const user = await User.findOne({ email });
-        
 
         if (!user) {
             return res.status(404).json({ message: 'Usuario no encontrado' });
         }
 
+        // Generar y guardar el token de restablecimiento de contraseña
         const resetToken = generateResetToken();
         user.resetPasswordToken = resetToken;
-        user.resetPasswordExpires = Date.now() + 3600000; 
+        user.resetPasswordExpires = Date.now() + 3600000; // Token válido por 1 hora
         await user.save();
 
+        // Enviar correo electrónico de restablecimiento de contraseña
         await sendPasswordResetEmail(email, resetToken);
 
         res.status(200).json({ message: 'Correo electrónico de restablecimiento de contraseña enviado' });
@@ -133,7 +146,6 @@ router.post('/reset-password', async (req, res) => {
         res.status(500).json({ message: 'Error interno del servidor' });
     }
 });
-
 
 
 module.exports = router;

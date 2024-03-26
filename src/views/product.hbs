@@ -66,6 +66,7 @@
             padding-top: 20px;
         }
         .go-to-cart-btn {
+            width: 80px;
             position: fixed;
             bottom: 20px;
             right: 20px;
@@ -96,7 +97,7 @@
             {{#each products }} 
                 <div class="col-md-3 product-card">
                     <div class="card mb-3">
-                        <div class="product-image"></div> <!-- Contenedor de la imagen -->
+                        <div class="product-image"></div> 
                         <div class="card-body">
                             <h3 class="card-title">{{this._doc.title}}</h3>
                             <p class="card-text">{{this._doc.description}}</p>
@@ -152,6 +153,27 @@
                     </form>
                 </div>
             </div>
+        {{/if }}
+        {{#if isPremium}}
+            <div class="row">
+                <div class="col-md-6">
+                    <form class="form-container" method="POST" action="/products">
+                        <h2>AGREGAR PRODUCTO</h2>
+                        <label for="title">Título:</label>
+                        <input type="text" id="title" name="title" required><br>
+                        <label for="price">Precio:</label>
+                        <input type="number" id="price" name="price" required><br>
+                        <label for="description">Descripción:</label>
+                        <textarea id="description" name="description" required></textarea><br>
+                        <label for="code">Código:</label>
+                        <input type="text" id="code" name="code" required><br>
+                        <label for="stock">Stock:</label>
+                        <input type="number" id="stock" name="stock" required><br>
+                        <label for="category">Categoría:</label>
+                        <input type="text" id="category" name="category" required><br>
+                        <button type="submit" onclick="addProduct()">Agregar Producto</button>
+                    </form>
+                </div>
         {{/if }}
         {{#if isAdminFalse}}
             <button class="go-to-cart-btn" onclick="redirectToCart('{{user._id}}')"><i class="fa-solid fa-cart-shopping"></i></button>

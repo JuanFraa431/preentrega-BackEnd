@@ -112,6 +112,13 @@ router.post('/:cid/product/:pid', async (req, res) => {
             return res.status(404).json({ status: 'error', message: `Carrito con ID ${cartId} no encontrado.` });
         }
         const product = await Product.findById(productId);
+        const user = req.user;
+        if (user.role === 'premium') {
+            // Verificar si el usuario es propietario del producto
+            if (product.owner.toString() === user._id.toString()) {
+                return res.status(400).json({ status: 'error', message: 'No puedes agregar tu propio producto al carrito' });
+            }
+        }
         if (!product) {
             return res.status(404).json({ status: 'error', message: `Producto con ID ${productId} no encontrado en Products.` });
         }

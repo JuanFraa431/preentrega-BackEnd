@@ -40,7 +40,7 @@ exports.initializePassportLocal = () => {
         { usernameField: 'email', passReqToCallback: true },
         async (req, email, password, done) => {
             try {
-                const { first_name, last_name, age } = req.body;
+                const { first_name, last_name, age, secret_word } = req.body;
 
                 if (!first_name || !last_name || !email || !password) {
                     return done(null, false, 'Faltan completar campos obligatorios');
@@ -57,6 +57,8 @@ exports.initializePassportLocal = () => {
 
                 if (email === 'adminCoder@coder.com') {
                     role = 'admin';
+                }if (secret_word === "PREMIUM") {
+                    role = 'premium'
                 }
 
                 const newUser = {

@@ -23,7 +23,6 @@ router.get("/", async (req, res) => {
         const products = await Product.find()
             .limit(limitValue)
             .skip((pageValue - 1) * limitValue)
-            .sort({ price: 1 });
         const hasPrevPage = pageValue > 1;
         const hasNextPage = pageValue < totalPages;
         const prevLink = hasPrevPage ? `/products?page=${pageValue - 1}&limit=${limitValue}` : null;
@@ -40,14 +39,18 @@ router.get("/", async (req, res) => {
             prevLink: prevLink,
             nextLink: nextLink
         }; 
-        console.log(result);
         const userFromDB = await User.findById(user._id);
         const isAdmin = userFromDB.role === 'admin';
+        const isPremium = userFromDB.role === 'premium';
         let isAdminFalse = false
+        let isPremiumFalse = false
         if (!isAdmin){
             isAdminFalse = true
         }
-        res.render('product', { products, user: userFromDB, isAdmin, isAdminFalse });
+        if (!isPremium){
+            isPremiumFalse = true
+        }
+        res.render('product', { products, user: userFromDB, isAdmin, isAdminFalse, isPremium, isPremiumFalse });
     } catch (error) {
         logger.error(error);
         res.status(500).json({ status: "error", message: customizeError('INTERNAL_SERVER_ERROR') });
@@ -69,20 +72,26 @@ router.get('/:pid', async (req, res) => {
 
 router.post('/', async (req, res) => {
     try {
+        // Obtenemos el ID del usuario autenticado
+        const ownerId = req.user._id;
+
         const { title, description, code, price, stock, category, thumbnails } = req.body;
         if (!title || !description || !code || !price || !stock || !category) {
             return res.status(400).json({ status: "error", message: customizeError('MISSING_FIELDS') });
         }
+
         const productData = {
             title,
-            description,  
+            description,
             code,
             price,
             stock,
             status: true,
             category,
             thumbnails,
+            owner: ownerId, // Almacenamos el ID del usuario como propietario del producto
         };
+
         const newProduct = await Product.create(productData);
         const io = req.app.get("io");
         io.emit("productAdded", newProduct);
