@@ -52,7 +52,6 @@ router.get("/", async (req, res) => {
         }
         res.render('product', { products, user: userFromDB, isAdmin, isAdminFalse, isPremium, isPremiumFalse });
     } catch (error) {
-        logger.error(error);
         res.status(500).json({ status: "error", message: customizeError('INTERNAL_SERVER_ERROR') });
     }
 });
@@ -97,7 +96,6 @@ router.post('/', async (req, res) => {
         io.emit("productAdded", newProduct);
         res.redirect('/products');
     } catch (error) {
-        logger.error(error);
         res.status(500).json({ status: "error", message: customizeError('INTERNAL_SERVER_ERROR') });
     }
 });
@@ -119,7 +117,6 @@ router.put('/:pid', async (req, res) => {
         
         return res.status(200).json({ status: "ok", message: customizeError('PRODUCT_UPDATED'), data: updatedProduct });
     } catch (error) {
-        logger.error(error);
         res.status(500).json({ status: "error", message: customizeError('INTERNAL_SERVER_ERROR') });
     }
 }); 
@@ -132,7 +129,6 @@ router.delete('/:pid', async (req, res) => {
         io.emit("productDeleted", productId); 
         res.status(200).json({ status: "success", message:customizeError('PRODUCT_DELETED') });
     } catch (error) {
-        logger.error(error);
         res.status(500).json({ status: "error", message: customizeError('INTERNAL_SERVER_ERROR') });
     }
 });

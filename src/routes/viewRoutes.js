@@ -68,7 +68,7 @@ router.post('/premium/:uid', async (req, res) => {
         const { newRole } = req.body;
 
         // Verifica si el nuevo rol es válido
-        if (newRole !== 'admin' && newRole !== 'premium') {
+        if (newRole !== 'admin' && newRole !== 'premium' && newRole !== 'user') {
             return res.status(400).json({ status: 'error', message: 'Rol inválido' });
         }
 
