@@ -1,7 +1,15 @@
+// Importa los módulos necesarios
 const mongoose = require('mongoose');
 const mongoosePaginate = require('mongoose-paginate-v2');
 const Schema = mongoose.Schema;
 
+// Define el esquema para los documentos
+const documentSchema = new Schema({
+    name: String,
+    reference: String
+});
+
+// Define el esquema del usuario
 const userSchema = new Schema({
     first_name: {
         type: String,
@@ -31,13 +39,37 @@ const userSchema = new Schema({
         type: String,
         default: 'user'
     },
-    resetPasswordToken: String, // Nuevo campo para almacenar el token de restablecimiento de contraseña
-    resetPasswordExpires: Date // Nuevo campo para almacenar la fecha de expiración del token
+    resetPasswordToken: String, 
+    resetPasswordExpires: Date,
+    documents: [documentSchema], // Nueva propiedad 'documents'
+    last_connection: Date // Nueva propiedad 'last_connection'
 });
+
+// Middleware para actualizar last_connection cuando se inicia sesión
+userSchema.statics.login = async function(email) {
+    const user = await this.findOneAndUpdate(
+        { email },
+        { last_connection: new Date() },
+        { new: true }
+    );
+    return user;
+};
+
+// Middleware para actualizar last_connection cuando se cierra sesión
+userSchema.statics.logout = async function(email) {
+    const user = await this.findOneAndUpdate(
+        { email },
+        { last_connection: new Date() },
+        { new: true }
+    );
+    return user;
+};
 
 // Agrega la paginación
 userSchema.plugin(mongoosePaginate);
 
+// Crea el modelo de usuario
 const User = mongoose.model('User', userSchema);
 
+// Exporta el modelo de usuario
 module.exports = User;

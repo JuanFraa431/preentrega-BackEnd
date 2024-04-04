@@ -24,7 +24,7 @@
                                 Nombre: {{this.first_name}} | Apellido: {{this.last_name}} | Email: {{this.email}} | Rol: {{this.role}}
                             </div>
                             <div>
-                                <form action="/premium/{{this._id}}" method="POST">
+                                <form action="/api/users/premium/{{this._id}}" method="POST">
                                     <div class="input-group">
                                         <select class="custom-select" name="newRole">
                                             <option value="admin">Admin</option>

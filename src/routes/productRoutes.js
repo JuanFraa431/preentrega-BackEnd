@@ -42,15 +42,21 @@ router.get("/", async (req, res) => {
         const userFromDB = await User.findById(user._id);
         const isAdmin = userFromDB.role === 'admin';
         const isPremium = userFromDB.role === 'premium';
+        const isUser = userFromDB.role === 'user';
+        console.log(isUser,"si es usuario pelotudo daleeee")
         let isAdminFalse = false
         let isPremiumFalse = false
+        let isUserFalse = false
         if (!isAdmin){
             isAdminFalse = true
         }
         if (!isPremium){
             isPremiumFalse = true
         }
-        res.render('product', { products, user: userFromDB, isAdmin, isAdminFalse, isPremium, isPremiumFalse });
+        if (!isUser){
+            isUserFalse = true
+        }
+        res.render('product', { products, user: userFromDB, isAdmin, isAdminFalse, isPremium, isPremiumFalse, isUser, isUserFalse });
     } catch (error) {
         res.status(500).json({ status: "error", message: customizeError('INTERNAL_SERVER_ERROR') });
     }

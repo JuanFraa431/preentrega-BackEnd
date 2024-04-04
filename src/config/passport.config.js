@@ -57,8 +57,6 @@ exports.initializePassportLocal = () => {
 
                 if (email === 'adminCoder@coder.com') {
                     role = 'admin';
-                }if (secret_word === "PREMIUM") {
-                    role = 'premium'
                 }
 
                 const newUser = {
@@ -96,6 +94,14 @@ exports.initializePassportLocal = () => {
                     return done(null, false, 'Email o contraseña equivocado');
                 }
 
+                try {
+                    await User.findOneAndUpdate(
+                        { email: user.email },
+                        { last_connection: new Date() }
+                    );
+                } catch (error) {
+                    console.error('Error al actualizar last_connection:', error);
+                }
                 console.log('Inicio de sesión exitoso');
                 return done(null, user);
             } catch (error) {

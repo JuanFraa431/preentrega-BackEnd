@@ -37,7 +37,22 @@ router.get('/githubcallback',
 );
 
 // Ruta para cerrar sesión
-router.get('/logout', (req, res) => {
+router.get('/logout', async (req, res) => {
+    try {
+        // Asegúrate de que req.session.user contenga la información del usuario
+        if (req.user.email) {
+            await User.findOneAndUpdate(
+                { email: req.user.email },
+                { last_connection: new Date() }
+            ).exec(); // Ejecuta la consulta para realizar la actualización
+        } else {
+            console.log('No se pudo actualizar last_connection: no se encontró información de usuario en la sesión.');
+        }
+    } catch (error) {
+        console.error('Error al actualizar last_connection:', error);
+        // Maneja cualquier error que pueda ocurrir durante la actualización
+    }
+
     req.session.destroy(err => {
         if (err) {
             console.error('Error al cerrar sesión:', err);
@@ -46,6 +61,7 @@ router.get('/logout', (req, res) => {
         res.redirect('/login'); 
     });
 });
+
 router.get('/current', async (req, res) => {
     try {
         // Verificar si el usuario está autenticado

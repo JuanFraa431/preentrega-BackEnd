@@ -28,12 +28,23 @@
 
                     <a href="api/sessions/current" class="btn btn-primary mt-3">Ver Información Actual</a>
                     <a href="/products" class="btn btn-warning mt-3">Ver Listado de productos</a>
-                    <!-- Condición para mostrar el botón solo a administradores y premium -->
+                    
+
+                    {{#if isUser}}
+                        <a href="api/users/documents" class="btn btn-secondary mt-3">Cargar Datos Premium</a>
+                    {{/if}}
+                    {{#if isUser}}
+                        <br>
+                        <form action="/api/users/premium/{{user._id}}" method="POST">
+                            <button type="submit" name="newRole" value="premium" class="btn btn-success mt-3">Ascender</button>
+                        </form>
+                            
+                    {{/if}}
                     {{#if isAdmin}}
-                        <a href="/userEdit" class="btn btn-secondary mt-3">Editar Perfil</a>
+                        <a href="/userEdit" class="btn btn-secondary mt-3">Editar Perfiles</a>
                     {{/if}}
                     {{#if isPremium}}
-                        <a href="/userEdit" class="btn btn-secondary mt-3">Editar Perfil</a>
+                        <a href="/userEdit" class="btn btn-secondary mt-3">Editar Perfiles</a>
                     {{/if}}
                 </div>
             </div>
