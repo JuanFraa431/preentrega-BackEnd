@@ -4,6 +4,7 @@ const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcrypt');
 const User = require('../dao/models/users');
 
+
 exports.initializePassportGitHub = () => {
     passport.use(new GitHubStrategy({
         clientID: 'Iv1.bae1b407c6a21b7a',
@@ -83,14 +84,14 @@ exports.initializePassportLocal = () => {
                 const user = await User.findOne({ email });
 
                 if (!user) {
-                    console.log('Usuario no encontrado');
+                    logger.error('Usuario no encontrado');
                     return done(null, false, 'Email o contraseña equivocado');
                 }
 
                 const passwordMatch = await bcrypt.compare(password, user.password);
 
                 if (!passwordMatch) {
-                    console.log('Contraseña incorrecta');
+                    logger.error('Contraseña incorrecta');
                     return done(null, false, 'Email o contraseña equivocado');
                 }
 

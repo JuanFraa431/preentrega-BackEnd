@@ -11,11 +11,11 @@ function deleteProduct(productId) {
             return response.text(); 
         })
         .then(data => {
-            console.log('Respuesta del servidor:', data); 
+            logger.info('Respuesta del servidor:', data); 
             window.location.reload(); 
         })
         .catch(error => {
-            console.error('Error:', error);
+            logger.error('Error:', error);
             alert('Hubo un problema al eliminar el producto.');
         });
     }
@@ -49,7 +49,7 @@ async function updateProduct(productId) {
             editButton.id = product.data._id;
         }
     } catch (error) {
-        console.error('Error:', error);
+        logger.error('Error:', error);
         alert('Hubo un problema al cargar el formulario de edición del producto.');
     }
 }
@@ -81,7 +81,7 @@ async function submitUpdatedProduct(event) {
         alert('Producto actualizado correctamente.');
         location.reload();  
     } catch (error) {
-        console.error('Error:', error);
+        logger.error('Error:', error);
         alert('Hubo un problema al actualizar el producto.');
     }
 }
@@ -103,10 +103,8 @@ async function updateProducts(updatedProducts) {
 async function addToCart(productId, userId) {
     try {
         const cartResponse = await fetch(`/api/carts/${userId}`);
-        console.log(cartResponse)
         const cartData = await cartResponse.json();
         let cartId;
-        console.log(cartData);
         if (cartData.status == "ok") {
             cartId = cartData.data._id;
         } else {
@@ -129,7 +127,7 @@ async function addToCart(productId, userId) {
         const addToCartData = await addToCartResponse.json();
         alert(addToCartData.message);
     } catch (error) {
-        console.error('Error al agregar el producto al carrito:', error);
+        logger.error('Error al agregar el producto al carrito:', error);
         alert('Hubo un problema al agregar el producto al carrito.');
     }
 }
@@ -147,7 +145,7 @@ function redirectToCart(userId) {
             window.location.href = `/api/carts/${cartId}/purchase`
         })
         .catch(error => {
-            console.error('Error al redirigir al carrito:', error);
+            logger.error('Error al redirigir al carrito:', error);
             alert(error.message);
         });
 }
@@ -198,10 +196,10 @@ async function eliminarProductoCarrito(cartId, productId) {
             }
 
         } else {
-            console.error('Error al eliminar el producto:', response.statusText);
+            logger.error('Error al eliminar el producto:', response.statusText);
             
         }
     } catch (error) {
-        console.error('Error al eliminar el producto:', error);
+        logger.error('Error al eliminar el producto:', error);
     }
 }

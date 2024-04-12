@@ -7,7 +7,7 @@ const { customizeError } = require("../middleware/errorHandler");
 const { sendPasswordResetEmail } = require('../utils/mailService.js');
 const { generateResetToken } = require('../utils/tokens.js');
 const bcrypt = require('bcrypt');
-
+const logger = require("../utils/logger.js")
 //---------------------------------------------------------------------------------------
 
 // Ruta para el registro de usuarios
@@ -46,16 +46,16 @@ router.get('/logout', async (req, res) => {
                 { last_connection: new Date() }
             ).exec(); // Ejecuta la consulta para realizar la actualización
         } else {
-            console.log('No se pudo actualizar last_connection: no se encontró información de usuario en la sesión.');
+            logger.info('No se pudo actualizar last_connection: no se encontró información de usuario en la sesión.');
         }
     } catch (error) {
-        console.error('Error al actualizar last_connection:', error);
+        logger.error('Error al actualizar last_connection:', error);
         // Maneja cualquier error que pueda ocurrir durante la actualización
     }
 
     req.session.destroy(err => {
         if (err) {
-            console.error('Error al cerrar sesión:', err);
+            logger.error('Error al cerrar sesión:', err);
             return res.redirect('/'); 
         }
         res.redirect('/login'); 
@@ -87,7 +87,7 @@ router.get('/current', async (req, res) => {
             res.render('current', { user: null });
         }
     } catch (error) {
-        console.error('Error al obtener el usuario actual:', error);
+        logger.error('Error al obtener el usuario actual:', error);
         res.status(500).render('error', { message: customizeError('INTERNAL_SERVER_ERROR') });
     }
 });
@@ -130,7 +130,7 @@ router.post('/reset-password/:token', async (req, res) => {
 
         res.status(200).json({ message: 'Contraseña restablecida correctamente' });
     } catch (error) {
-        console.error('Error al restablecer la contraseña:', error);
+        logger.error('Error al restablecer la contraseña:', error);
         res.status(500).json({ message: 'Error interno del servidor' });
     }
 });
@@ -158,7 +158,7 @@ router.post('/reset-password', async (req, res) => {
 
         res.status(200).json({ message: 'Correo electrónico de restablecimiento de contraseña enviado' });
     } catch (error) {
-        console.error('Error al enviar el correo electrónico de restablecimiento de contraseña:', error);
+        logger.error('Error al enviar el correo electrónico de restablecimiento de contraseña:', error);
         res.status(500).json({ message: 'Error interno del servidor' });
     }
 });

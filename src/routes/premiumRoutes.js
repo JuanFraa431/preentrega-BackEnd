@@ -4,6 +4,7 @@ const router = express.Router();
 const User = require('../dao/models/users');
 const multer = require('multer');
 const path = require('path');
+const { logger } = require('../utils/logger');
 
 
 router.post('/premium/:uid', async (req, res) => {
@@ -29,9 +30,8 @@ router.post('/premium/:uid', async (req, res) => {
         const requiredDocuments = ['Documentacion', 'ConstanciaDireccion', 'ConstanciaCuenta'];
         const userDocuments = user.documents.map(doc => doc.name);
         const hasRequiredDocuments = requiredDocuments.every(doc => userDocuments.includes(doc));
-        console.log('Nombres de documentos del usuario:', userDocuments);
-        console.log('Documentos requeridos:', requiredDocuments);
-        console.log(hasRequiredDocuments, "esto es lo que estas buscando")
+        logger.info('Nombres de documentos del usuario:', userDocuments);
+        logger.info('Documentos requeridos:', requiredDocuments);
         if (!hasRequiredDocuments) {
             return res.status(400).json({ status: 'error', message: 'El usuario no tiene los documentos necesarios para ser premium' });
         }
@@ -43,7 +43,7 @@ router.post('/premium/:uid', async (req, res) => {
         // Devuelve una respuesta exitosa
         return res.status(200).json({ status: 'success', message: 'Rol de usuario actualizado correctamente a premium', user });
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         return res.status(500).json({ status: 'error', message: 'Error interno del servidor' });
     }
 });
@@ -52,8 +52,6 @@ router.post('/premium/:uid', async (req, res) => {
 router.get('/documents', (req, res) => {
     if (req.isAuthenticated()) {
         const userId = req.user._id;
-        console.log("este es el usuario", req.user._id,"aca termina")
-        
         res.render('documents', { userId: userId });
     } else {
         res.redirect('/login');
@@ -78,7 +76,7 @@ const checkDocumentLimit = async (req, res, next) => {
         // Si no se excede el límite, continúa con el siguiente middleware
         next();
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         return res.status(500).json({ status: 'error', message: 'Error interno del servidor' });
     }
 };
@@ -124,7 +122,7 @@ router.post('/:uid/documents', checkDocumentLimit, upload.array('documents', 3),
         return res.status(200).json({ status: 'success', message: 'Documentos Cargados con exito', user });
 
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         return res.status(500).json({ status: 'error', message: 'Error interno del servidor' });
     }
 });

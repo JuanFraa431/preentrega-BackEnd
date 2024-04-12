@@ -22,7 +22,7 @@ const User = require('./dao/models/users');
 const sessionController = require('./controllers/sessionController');
 const config = require('./config/config');
 const swaggerMiddleware = require('./middleware/swagger');
-
+const { addLogger, logger } = require('./utils/logger.js');
 const swaggerUiExpress = require('swagger-ui-express')
 const swaggerJsDoc = require('swagger-jsdoc')
 
@@ -57,8 +57,6 @@ app.use(session({
     store: MongoStore.create({
         mongoUrl:MONGO_URL, 
         mongoOptions: {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
         },
         ttl: 15000000000,
     }),
@@ -69,6 +67,7 @@ app.use(session({
 
 app.use(passport.initialize());
 app.use(passport.session());
+
 
 sessionController;
 
@@ -111,10 +110,9 @@ app.use('/api/users', premiumRouter);
 app.get('/home', async (req, res) => {
     try {
         const products = await Product.find().lean();
-        console.log(products);
         res.render('home', { products });
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         res.status(500).render('error', { message: 'Error interno del servidor', error });
     }
 });
@@ -128,74 +126,58 @@ app.get('/realtimeproducts', (req, res) => {
 
 // Configurar Socket.io
 const httpServer = app.listen(PORT, err =>{
-    if (err)  console.log(err)
-    console.log(`Escuchando en el puerto ${PORT}`)
+    if (err)  logger.error(err)
+    logger.info(`Escuchando en el puerto ${PORT}`)
 })
 
-const logger = require('./utils/logger.js');
-app.get('/loggerTest', (req, res) => {
-    logger.debug('Debug');
-    logger.info('Info');
-    logger.warn('Warning');
-    logger.error('Error'); 
-    res.send('Logs enviados al logger');
-});
 
-// insatanciando un server io
+app.use(addLogger)
+
 const io = new Server(httpServer)
 
 app.set('io', io);
 
 io.on("connection", (socket) => {
-    console.log("Nuevo cliente conectado");
+    logger.info("Nuevo cliente conectado");
 
     socket.on("productDeleted", async function(productId) {
         try {
             await Product.findByIdAndDelete(productId);
             sendProductsUpdate();
         } catch (error) {
-            console.error(error);
+            logger.error(error);
         }
     });
 
-    // Función para enviar actualizaciones de productos a los clientes conectados
     const sendProductsUpdate = async () => {
         try {
             // Obtener todos los productos desde MongoDB
             const products = await Product.find();
             
-            // Emite un evento "updateProducts" a todos los clientes conectados con la lista de productos
             io.emit("updateProducts", products);
         } catch (error) {
-            console.error(error);
+            logger.error(error);
         }
     };
 
-    // Envía una actualización de productos cuando un cliente se conecta
+
     sendProductsUpdate();
 
-    // Escucha el evento "updateProducts" desde el cliente y envía una actualización de productos
     socket.on("updateProducts", () => {
         sendProductsUpdate();
     });
 
-    // Llama a sendProductsUpdate al final de la conexión del cliente (no está claro si es necesario)
     sendProductsUpdate();
 });
 
-// Conexión a MongoDB usando Mongoose
-mongoose.connect(MONGO_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-});
+
+mongoose.connect(MONGO_URL);
 
 const db = mongoose.connection;
 
-// Maneja eventos de conexión y error en la base de datos MongoDB
-db.on('error', console.error.bind(console, 'Error de conexión a MongoDB:'));
+db.on('error', logger.error.bind(console, 'Error de conexión a MongoDB:'));
 db.once('open', () => {
-    console.log('Conexión exitosa a MongoDB');
+    logger.info('Conexión exitosa a MongoDB');
 });
 
-// Establece las rutas para las operaciones relacionadas con productos
 app.use('/api', productosRoutes);

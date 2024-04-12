@@ -34,10 +34,8 @@ router.get('/userProfile', isAuthenticated, async (req, res) => {
             if (req.user) {
         
                 res.render('userProfile', { user: req.user, isAdmin, isPremium, isUser});
-                console.log(req.user);
             } else {
                 res.redirect('/login');
-                console.log(req.user);
             }
         }
     } catch (error) {

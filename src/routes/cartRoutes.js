@@ -8,6 +8,7 @@ const Cart = require('../dao/models/cart');
 const Product = require('../dao/models/products');
 const Ticket = require('../dao/models/ticket');
 const isAuthenticated = require('../middleware/auth.middleware')
+const logger = require('../utils/logger')
 const cartController = require('../controllers/cartController');
 const { customizeError } = require("../middleware/errorHandler");
 
@@ -70,7 +71,7 @@ router.post('/:cid/purchase', async (req, res) => {
         await cart.save();
         return res.status(200).json({ status: 'success', message: 'Compra finalizada con éxito.', data: ticket });
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         return res.status(500).json({ status: 'error', message: customizeError('INTERNAL_SERVER_ERROR') });
     }
 });
@@ -82,7 +83,7 @@ router.get('/', async (req, res) => {
         const carts = await Cart.find();
         res.status(200).json({ status: 'success', message: 'Carritos encontrados.', data: carts });
     } catch (error) {
-        console.error('Error al obtener los carritos:', error);
+        logger.error('Error al obtener los carritos:', error);
         res.status(500).json({ status: 'error', message: customizeError('INTERNAL_SERVER_ERROR') });
     }
 });
@@ -97,7 +98,7 @@ router.post('/:uid', isAuthenticated, async (req, res) => {
         }
         return res.status(200).json({ status: 'ok', message: 'Ya existe un carrito asociado a este usuario', data: existingCart });
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         
         res.status(500).json({ status: 'error', message: customizeError('INTERNAL_SERVER_ERROR') });
     }
@@ -134,7 +135,7 @@ router.post('/:cid/product/:pid', async (req, res) => {
         await cart.save();
         return res.status(200).json({ status: 'ok', message: 'Producto agregado al carrito con éxito.', data: cart });
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         return res.status(500).json({ status: 'error', message: customizeError('INTERNAL_SERVER_ERROR') });
     }
 });
@@ -160,7 +161,7 @@ router.get('/:cid/purchase', async (req, res) => {
         const totalAmount = productsInfo.reduce((acc, curr) => acc + curr.subtotal, 0);
         res.render('cartEnd', { productsInfo, totalAmount, cartId}); 
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         res.status(500).json({ status: 'error', message: customizeError('INTERNAL_SERVER_ERROR') });
     }
 });
@@ -186,7 +187,7 @@ router.delete('/:cid/products/:pid', async (req, res) => {
             return res.status(404).json({ status: 'error', message: `Producto con ID ${productId} no encontrado en el carrito.` });
         }
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         return res.status(500).json({ status: 'error', message: customizeError('INTERNAL_SERVER_ERROR') });
     }
 });
@@ -212,7 +213,7 @@ router.put('/:cid/products/:pid', async (req, res) => {
             return res.status(404).json({ status: 'error', message: `Producto con ID ${productId} no encontrado en el carrito.` });
         }
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         return res.status(500).json({ status: 'error', message: customizeError('INTERNAL_SERVER_ERROR') });
     }
 });
@@ -228,7 +229,7 @@ router.delete('/:cid', async (req, res) => {
         await cart.save();
         return res.status(200).json({ status: 'ok', message: 'Carrito vaciado con éxito.', data: cart });
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         return res.status(500).json({ status: 'error', message: customizeError('INTERNAL_SERVER_ERROR') });
     }
 });
@@ -242,7 +243,7 @@ router.get('/:uid', async (req, res) => {
         }
         return res.status(200).json({ status: 'ok', message: 'Carrito encontrado.', data: cart });
     } catch (error) {
-        console.error('Error al obtener el carrito:', error);
+        logger.error('Error al obtener el carrito:', error);
         res.status(500).json({ status: 'error', message: customizeError('INTERNAL_SERVER_ERROR') });
     }
 });

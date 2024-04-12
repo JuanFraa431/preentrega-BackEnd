@@ -2,6 +2,7 @@ const Product = require('../models/products.js');
 const { promises } = require("dns");
 const fs = require("fs");
 const { json } = require("stream/consumers");
+const logger = require("../../utils/logger.js")
 
 // Clase que gestiona las operaciones relacionadas con la base de datos para productos
 class ProductManagerDb {
@@ -18,7 +19,7 @@ class ProductManagerDb {
             const existingProduct = await Product.findOne({ code });
 
             if (existingProduct) {
-                console.log("Código de producto ya ingresado.");
+                logger.warning("Código de producto ya ingresado.");
                 return;
             }
 
@@ -37,9 +38,9 @@ class ProductManagerDb {
             // Guarda el nuevo producto en la base de datos
             await newProduct.save();
 
-            console.log("Producto ingresado con éxito");
+            logger.info("Producto ingresado con éxito");
         } catch (error) {
-            console.error("Error al agregar el producto:", error);
+            logger.error("Error al agregar el producto:", error);
         }
     }
 
@@ -57,7 +58,7 @@ class ProductManagerDb {
             const products = await query.exec();
             return products;
         } catch (error) {
-            console.error("Error al obtener productos:", error);
+            logger.error("Error al obtener productos:", error);
             return [];
         }
     }
@@ -71,11 +72,11 @@ class ProductManagerDb {
             if (product) {
                 return product;
             } else {
-                console.log("Producto no encontrado");
+                logger.info("Producto no encontrado");
                 return null;
             }
         } catch (error) {
-            console.error("Error al obtener el producto por ID:", error);
+            logger.error("Error al obtener el producto por ID:", error);
             return null;
         }
     }
@@ -86,13 +87,13 @@ class ProductManagerDb {
             // Busca y elimina el producto por su ID, devuelve un mensaje de éxito si se elimina correctamente
             const result = await Product.findByIdAndDelete(id);
             if (result) {
-                console.log(`Producto con ID ${id} eliminado correctamente`);
+                logger.info(`Producto con ID ${id} eliminado correctamente`);
                 return { status: "ok", message: `Producto con ID ${id} eliminado correctamente` };
             } else {
                 throw new Error(`Producto con ID ${id} no encontrado.`);
             }
         } catch (error) {
-            console.error("Error al eliminar el producto:", error);
+            logger.error("Error al eliminar el producto:", error);
             return { status: "error", message: "Error al eliminar el producto." };
         }
     }
@@ -103,13 +104,13 @@ class ProductManagerDb {
             // Busca y actualiza el producto por su ID, devuelve el producto actualizado si se realiza correctamente
             const result = await Product.findByIdAndUpdate(id, updatedProductData, { new: true });
             if (result) {
-                console.log("Producto actualizado con éxito");
+                logger.info("Producto actualizado con éxito");
                 return result;
             } else {
                 throw new Error(`Producto con ID ${id} no encontrado.`);
             }
         } catch (error) {
-            console.error("Error al actualizar el producto:", error);
+            logger.error("Error al actualizar el producto:", error);
             throw error;
         }
     }

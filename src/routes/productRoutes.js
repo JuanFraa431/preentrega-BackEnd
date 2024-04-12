@@ -43,7 +43,6 @@ router.get("/", async (req, res) => {
         const isAdmin = userFromDB.role === 'admin';
         const isPremium = userFromDB.role === 'premium';
         const isUser = userFromDB.role === 'user';
-        console.log(isUser,"si es usuario pelotudo daleeee")
         let isAdminFalse = false
         let isPremiumFalse = false
         let isUserFalse = false

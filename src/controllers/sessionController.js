@@ -2,6 +2,7 @@ const passport = require('passport');
 const bcrypt = require('bcrypt');
 const User = require('../dao/models/users');
 const { initializePassportGitHub, initializePassportLocal } = require('../config/passport.config')
+const logger = require("../utils/logger")
 
 initializePassportLocal()
 initializePassportGitHub()
@@ -68,7 +69,7 @@ const sessionController = {
             req.logout();
             res.status(200).json({ message: 'Sesión cerrada exitosamente' });
         } catch (error) {
-            console.error('Error al cerrar sesión:', error);
+            logger.error('Error al cerrar sesión:', error);
             res.status(500).json({ message: 'Error interno del servidor' });
         }
     },
@@ -81,7 +82,7 @@ const sessionController = {
             }
             res.status(200).json({ user });
         } catch (error) {
-            console.error('Error al obtener usuario actual:', error);
+            logger.error('Error al obtener usuario actual:', error);
             res.status(500).json({ message: 'Error interno del servidor' });
         }
     }

@@ -1,4 +1,5 @@
 const Cart = require('../dao/models/cart');
+const logger = require('../utils/logger');
 
 exports.getCartByUserId = async (req, res) => {
     try {
@@ -9,7 +10,7 @@ exports.getCartByUserId = async (req, res) => {
         }
         res.status(200).json({ cart });
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         res.status(500).json({ message: 'Error interno del servidor.' });
     }
 };

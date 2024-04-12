@@ -1,6 +1,7 @@
 // En mailServices.js
 const nodemailer = require('nodemailer');
 const User = require('../dao/models/users');
+const logger = require("../utils/logger")
 
 async function sendPasswordResetEmail(email, token) {
     try {
@@ -89,7 +90,7 @@ async function sendPasswordResetEmail(email, token) {
 
         await transporter.sendMail(mailOptions);
     } catch (error) {
-        console.error('Error al enviar el correo electrónico de restablecimiento de contraseña:', error);
+        logger.error('Error al enviar el correo electrónico de restablecimiento de contraseña:', error);
         throw error;
     }
 }
