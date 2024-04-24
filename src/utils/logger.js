@@ -38,6 +38,7 @@ const logger = winston.createLogger({
 const addLogger =(req, res, next ) => {
     req.logger = logger
     logger.info(`${req.method} Ruta: localhost:8080${req.url} - ${new Date().getDate}`)
+    next();
 }
 
 

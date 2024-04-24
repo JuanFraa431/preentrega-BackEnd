@@ -2,8 +2,6 @@ const express = require("express");
 const handlebars = require('express-handlebars')
 const app = express();
 const { Server } = require('socket.io')
-const ProductManager = require("./dao/Managers/ProductManagerFileSystem"); // Importa el módulo ProductManager 
-const productManager = new ProductManager(); // Crea una instancia de ProductManager
 const fs = require("fs");
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
@@ -96,7 +94,6 @@ const cartRoutes = require('./routes/cartRoutes');
 // Configuración de archivos estáticos
 app.use('/mockingproducts', mockingProductsRoute);
 app.use(express.static('public'));
-app.use('/api/products', productRoutes);
 app.use('/api/carts', cartRoutes);
 app.use('/products', productRoutes);
 app.use('/carts', cartRoutes);
@@ -126,8 +123,9 @@ app.get('/realtimeproducts', (req, res) => {
 
 // Configurar Socket.io
 const httpServer = app.listen(PORT, err =>{
+    const localhostLink = `http://localhost:${PORT}/login`;
     if (err)  logger.error(err)
-    logger.info(`Escuchando en el puerto ${PORT}`)
+    logger.info(`Escuchando en el puerto ${PORT}. Enlace: ${localhostLink}`);
 })
 
 

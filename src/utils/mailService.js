@@ -95,6 +95,32 @@ async function sendPasswordResetEmail(email, token) {
     }
 }
 
+async function sendNotificationEmail(email, message) {
+    try {
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: 'juanfraa032@gmail.com', 
+                pass: 'uoma cair nlvx uxrs' 
+            }
+        });
+
+        const mailOptions = {
+            from: 'juanfraa032@gmail.com', 
+            to: email,
+            subject: 'Notificación de eliminación de producto',
+            html: message 
+        };
+
+        await transporter.sendMail(mailOptions);
+    } catch (error) {
+        console.error('Error al enviar la notificación por correo electrónico:', error);
+        throw error;
+    }
+}
+
+
 module.exports = {
-    sendPasswordResetEmail
+    sendPasswordResetEmail,
+    sendNotificationEmail 
 };

@@ -1,11 +1,13 @@
-
 const express = require('express');
 const router = express.Router();
 const User = require('../dao/models/users');
 const multer = require('multer');
 const path = require('path');
 const { logger } = require('../utils/logger');
+const Swal = require('sweetalert2');
 
+
+//-------------------------------------------------------------------------------------------------------------------
 
 router.post('/premium/:uid', async (req, res) => {
     try {
@@ -26,14 +28,17 @@ router.post('/premium/:uid', async (req, res) => {
             return res.status(404).json({ status: 'error', message: 'Usuario no encontrado' });
         }
 
-        // Verifica si el usuario tiene los archivos necesarios para ser premium
-        const requiredDocuments = ['Documentacion', 'ConstanciaDireccion', 'ConstanciaCuenta'];
-        const userDocuments = user.documents.map(doc => doc.name);
-        const hasRequiredDocuments = requiredDocuments.every(doc => userDocuments.includes(doc));
-        logger.info('Nombres de documentos del usuario:', userDocuments);
-        logger.info('Documentos requeridos:', requiredDocuments);
-        if (!hasRequiredDocuments) {
-            return res.status(400).json({ status: 'error', message: 'El usuario no tiene los documentos necesarios para ser premium' });
+        // Si el usuario que está realizando la solicitud no es un administrador,
+        // verifica si el usuario tiene los archivos necesarios para ser premium
+        if (req.user.role !== 'admin') {
+            const requiredDocuments = ['Documentacion', 'ConstanciaDireccion', 'ConstanciaCuenta'];
+            const userDocuments = user.documents.map(doc => doc.name);
+            const hasRequiredDocuments = requiredDocuments.every(doc => userDocuments.includes(doc));
+            logger.info('Nombres de documentos del usuario:', userDocuments);
+            logger.info('Documentos requeridos:', requiredDocuments);
+            if (!hasRequiredDocuments) {
+                return res.status(400).json({ status: 'error', message: 'El usuario no tiene los documentos necesarios para ser premium' });
+            }
         }
 
         // Actualiza el rol del usuario y guarda los cambios en la base de datos
@@ -92,16 +97,19 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-router.post('/:uid/documents', checkDocumentLimit, upload.array('documents', 3), async (req, res) => {
+router.post('/:uid/documents', upload.array('documents', 3), async (req, res) => {
     try {
         // Obtiene el ID de usuario de los parámetros de la URL
         const userId = req.params.uid;
 
         // Busca el usuario por su ID en la base de datos
-        const user = await User.findById(userId);
+        let user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ status: 'error', message: 'Usuario no encontrado' });
         }
+
+        // Limpiar documentos anteriores si existen
+        user.documents = [];
 
         // Itera sobre los archivos cargados
         req.files.forEach(file => {
@@ -116,10 +124,10 @@ router.post('/:uid/documents', checkDocumentLimit, upload.array('documents', 3),
         });
 
         // Guarda los cambios en el usuario en la base de datos
-        await user.save();
+        user = await user.save();
 
         // Devuelve una respuesta exitosa
-        return res.status(200).json({ status: 'success', message: 'Documentos Cargados con exito', user });
+        return res.status(200).json({ status: 'success', message: 'Documentos actualizados con éxito', user });
 
     } catch (error) {
         logger.error(error);
@@ -127,14 +135,29 @@ router.post('/:uid/documents', checkDocumentLimit, upload.array('documents', 3),
     }
 });
 
+// Ruta para eliminar un usuario de la base de datos
+router.post('/delete-user/:userId', async (req, res) => {
+    const { userId } = req.params;
 
+    try {
+        // Buscar al usuario por su ID y eliminarlo de la base de datos
+        await User.findByIdAndDelete(userId);
 
-
-
-
-
-
-
+        // Mostrar SweetAlert antes de redirigir
+        await Swal.fire({
+            title: 'Usuario eliminado',
+            text: 'El usuario ha sido eliminado exitosamente.',
+            icon: 'success',
+            confirmButtonText: 'Aceptar'
+        }).then(() => {
+            // Redirigir a una página apropiada después de eliminar el usuario
+            res.redirect('/userEdit'); // Redirige a la página de edición de usuarios
+        });
+    } catch (error) {
+        console.error('Error al eliminar usuario:', error);
+        res.status(500).json({ message: 'Error interno del servidor al eliminar usuario' });
+    }
+});
 
 
 

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Current User</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="container mt-5">
 
@@ -12,60 +13,40 @@
     {{#if user}}
     <div class="card mt-3">
         <div class="card-body">
-            <p class="card-text"><strong>Nombre de usuario:</strong> {{user.first_name}}   <a href="/userProfile" class="btn btn-success">Perfil</a></p>
-            <p class="card-text"><strong>Rol:</strong> {{user.role}}</p>
-
-            {{#if isAdmin}}
-                <h2 class="card-title">Listado de Usuarios:</h2>
-                <ul class="list-group">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>NOMBRE</th>
+                        <th>APELLIDO</th>
+                        <th>MAIL</th>
+                        <th>ROL</th>
+                        <th>ACCIÓN</th>
+                    </tr>
+                </thead>
+                <tbody>
                     {{#each allUsersPremiums}}
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <div>
-                                Nombre: {{this.first_name}} | Apellido: {{this.last_name}} | Email: {{this.email}} | Rol: {{this.role}}
-                            </div>
-                            <div>
-                                <form action="/api/users/premium/{{this._id}}" method="POST">
-                                    <div class="input-group">
-                                        <select class="custom-select" name="newRole">
-                                            <option value="admin">Admin</option>
-                                            <option value="premium">Premium</option>
-                                            <option value="user">User</option>
-                                        </select>
-                                        <div class="input-group-append">
-                                            <button type="submit" class="btn btn-primary">Cambiar</button>
-                                        </div>
-                                    </div>
+                        <tr>
+                            <td>{{this.first_name}}</td>
+                            <td>{{this.last_name}}</td>
+                            <td>{{this.email}}</td>
+                            <td>{{this.role}}</td>
+                            <td class="d-flex align-items-center">
+                                <form action="/api/users/premium/{{this._id}}" method="POST" class="mr-2">
+                                    <select class="custom-select" name="newRole" style="width: 120px; font-size: 0.85rem;">
+                                        <option value="admin">Admin</option>
+                                        <option value="premium">Premium</option>
+                                        <option value="user">User</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-primary btn-sm mr-2">Cambiar</button>
                                 </form>
-                            </div>
-                        </li>
-                    {{/each}}
-                </ul>
-            {{/if}}
-            
-            {{#if isPremium}}
-                <h2 class="card-title">Listado de Usuarios:</h2>
-                <ul class="list-group">
-                    {{#each allUsers}}
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <div>
-                                Nombre: {{this.first_name}} | Apellido: {{this.last_name}} | Email: {{this.email}} | Edad: {{this.age}}
-                            </div>
-                            <div>
-                                <form action="/premium/{{this._id}}" method="POST">
-                                    <div class="input-group">
-                                        <select class="custom-select" name="newRole">
-                                            <option value="premium">Premium</option>
-                                        </select>
-                                        <div class="input-group-append">
-                                            <button type="submit" class="btn btn-primary">Ascender</button>
-                                        </div>
-                                    </div>
+                                <form action="/api/users/delete-user/{{this._id}}" method="POST">
+                                    <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
                                 </form>
-                            </div>
-                        </li>
+                            </td>
+                        </tr>
                     {{/each}}
-                </ul>
-            {{/if}}
+                </tbody>
+            </table>
         </div>
     </div>
     <br>

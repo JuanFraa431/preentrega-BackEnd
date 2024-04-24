@@ -3,6 +3,8 @@ const GitHubStrategy = require('passport-github2');
 const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcrypt');
 const User = require('../dao/models/users');
+const { logger } = require('../utils/logger');
+
 
 
 exports.initializePassportGitHub = () => {

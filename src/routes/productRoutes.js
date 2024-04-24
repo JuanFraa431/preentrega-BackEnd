@@ -1,20 +1,22 @@
 // productRoutes.js
 const express = require("express");
 const router = express.Router();
-const ProductManager = require("../dao/Managers/ProductManagerFileSystem"); 
-const productManager = new ProductManager(); 
 const productosController = require("../controllers/productController");
 const Product = require("../dao/models/products");
 const ProductManagerDb = require("../dao/Managers/ProductManagerDB");
 const User = require('../dao/models/users');
 const { customizeError } = require("../middleware/errorHandler");
+const mailService = require('../utils/mailService'); 
 const { logger } = require('../utils/logger');
 
 //---------------------------------------------------------------------------------------
 
 router.get("/", async (req, res) => {
     try {
+        // Verifica si el usuario está autenticado
         const user = req.user;
+
+        // Lógica para obtener los productos
         const { page = 1, limit = 10 } = req.query;
         const pageValue = parseInt(page);
         const limitValue = parseInt(limit);
@@ -39,27 +41,34 @@ router.get("/", async (req, res) => {
             prevLink: prevLink,
             nextLink: nextLink
         }; 
-        const userFromDB = await User.findById(user._id);
-        const isAdmin = userFromDB.role === 'admin';
-        const isPremium = userFromDB.role === 'premium';
-        const isUser = userFromDB.role === 'user';
-        let isAdminFalse = false
-        let isPremiumFalse = false
-        let isUserFalse = false
-        if (!isAdmin){
-            isAdminFalse = true
+
+        // Renderiza la vista de productos sin incluir información específica del usuario si no está autenticado
+        if (user) {
+            const userFromDB = await User.findById(user._id);
+            const isAdmin = userFromDB.role === 'admin';
+            const isPremium = userFromDB.role === 'premium';
+            const isUser = userFromDB.role === 'user';
+            let isAdminFalse = false;
+            let isPremiumFalse = false;
+            let isUserFalse = false;
+            if (!isAdmin){
+                isAdminFalse = true;
+            }
+            if (!isPremium){
+                isPremiumFalse = true;
+            }
+            if (!isUser){
+                isUserFalse = true;
+            }
+            res.render('product', { products, user: userFromDB, isAdmin, isAdminFalse, isPremium, isPremiumFalse, isUser, isUserFalse });
+        } else {
+            res.render('product', { products });
         }
-        if (!isPremium){
-            isPremiumFalse = true
-        }
-        if (!isUser){
-            isUserFalse = true
-        }
-        res.render('product', { products, user: userFromDB, isAdmin, isAdminFalse, isPremium, isPremiumFalse, isUser, isUserFalse });
     } catch (error) {
         res.status(500).json({ status: "error", message: customizeError('INTERNAL_SERVER_ERROR') });
     }
 });
+
 router.get('/:pid', async (req, res) => {
     try {
         const productId = req.params.pid; 
@@ -129,11 +138,86 @@ router.put('/:pid', async (req, res) => {
 router.delete('/:pid', async (req, res) => {
     try {
         const productId = req.params.pid;
+        
+        const product = await Product.findById(productId);
+
+        if (!product) {
+            return res.status(404).json({ status: "error", message: customizeError('PRODUCT_NOT_FOUND') });
+        }
+
+        const ownerId = product.owner; 
+
+        const user = await User.findById(ownerId);
+
+        if (!user) {
+            return res.status(404).json({ status: "error", message: customizeError('USER_NOT_FOUND') });
+        }
+
+        const ownerEmail = user.email; 
+
         await Product.findByIdAndDelete(productId);
+
+        const message = `
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Notificación de eliminación de producto</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    line-height: 1.6;
+                    margin: 0;
+                    padding: 0;
+                    background-color: #f4f4f4;
+                }
+                .container {
+                    max-width: 600px;
+                    margin: 20px auto;
+                    padding: 20px;
+                    background-color: #fff;
+                    border-radius: 10px;
+                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                }
+                h1 {
+                    color: #333;
+                }
+                p {
+                    color: #555;
+                }
+                .button {
+                    display: inline-block;
+                    padding: 10px 20px;
+                    background-color: rgb(103, 228, 147);
+                    color: black;
+                    border: none;
+                    border-radius: 5px;
+                    text-decoration: none;
+                    font-size: 16px;
+                    cursor: pointer;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>Notificación de eliminación de producto</h1>
+                <p>Hola,</p>
+                <p>Tu producto <strong>"${product.title}"</strong> ha sido eliminado.</p>
+                <p>Si necesitas más información, no dudes en ponerte en contacto con nosotros.</p>
+                <p>Saludos,</p>
+                <p>Tu equipo</p>
+            </div>
+        </body>
+        </html>
+    `;
+
+        await mailService.sendNotificationEmail(ownerEmail, message);
+
         const io = req.app.get("io");
         io.emit("productDeleted", productId); 
-        res.status(200).json({ status: "success", message:customizeError('PRODUCT_DELETED') });
+        res.status(200).json({ status: "success", message: customizeError('PRODUCT_DELETED') });
     } catch (error) {
+        console.error('Error al eliminar el producto:', error);
         res.status(500).json({ status: "error", message: customizeError('INTERNAL_SERVER_ERROR') });
     }
 });

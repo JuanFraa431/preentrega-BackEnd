@@ -1,9 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const CartManager = require("../dao/Managers/CartManagerFileSystem");
-const ProductManager = require("../dao/Managers/ProductManagerFileSystem");
-const cartManager = new CartManager();  
-const productManager = new ProductManager();  
 const Cart = require('../dao/models/cart');
 const Product = require('../dao/models/products');
 const Ticket = require('../dao/models/ticket');

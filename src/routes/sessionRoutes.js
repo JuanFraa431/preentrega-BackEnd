@@ -49,8 +49,7 @@ router.get('/logout', async (req, res) => {
             logger.info('No se pudo actualizar last_connection: no se encontró información de usuario en la sesión.');
         }
     } catch (error) {
-        logger.error('Error al actualizar last_connection:', error);
-        // Maneja cualquier error que pueda ocurrir durante la actualización
+        console.log('Error al actualizar last_connection:', error);
     }
 
     req.session.destroy(err => {
@@ -162,7 +161,6 @@ router.post('/reset-password', async (req, res) => {
         res.status(500).json({ message: 'Error interno del servidor' });
     }
 });
-
 
 module.exports = router;
 
