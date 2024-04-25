@@ -4,7 +4,7 @@ const User = require('../dao/models/users');
 const multer = require('multer');
 const path = require('path');
 const { logger } = require('../utils/logger');
-const Swal = require('sweetalert2');
+const { createAlert, createAlertWithCallback } = require('../utils/alerts');
 
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -142,23 +142,16 @@ router.post('/delete-user/:userId', async (req, res) => {
     try {
         // Buscar al usuario por su ID y eliminarlo de la base de datos
         await User.findByIdAndDelete(userId);
-
-        // Mostrar SweetAlert antes de redirigir
-        await Swal.fire({
-            title: 'Usuario eliminado',
-            text: 'El usuario ha sido eliminado exitosamente.',
-            icon: 'success',
-            confirmButtonText: 'Aceptar'
-        }).then(() => {
-            // Redirigir a una página apropiada después de eliminar el usuario
-            res.redirect('/userEdit'); // Redirige a la página de edición de usuarios
+        
+        createAlertWithCallback ('info', '¡Información!', 'Esta alerta se cerrará en 3 segundos.', () => {
+            console.log('La alerta ha sido cerrada.');
+            res.status(200).json({ message: 'Usuario eliminado exitosamente' });
         });
     } catch (error) {
         console.error('Error al eliminar usuario:', error);
         res.status(500).json({ message: 'Error interno del servidor al eliminar usuario' });
     }
 });
-
 
 
 
