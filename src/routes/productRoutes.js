@@ -17,7 +17,7 @@ router.get("/", async (req, res) => {
         const user = req.user;
 
         // Lógica para obtener los productos
-        const { page = 1, limit = 10 } = req.query;
+        const { page = 1, limit = 20 } = req.query;
         const pageValue = parseInt(page);
         const limitValue = parseInt(limit);
         const totalProducts = await Product.countDocuments();
@@ -108,7 +108,9 @@ router.post('/', async (req, res) => {
         const newProduct = await Product.create(productData);
         const io = req.app.get("io");
         io.emit("productAdded", newProduct);
-        res.redirect('/products');
+        setTimeout(() => {
+            res.redirect('/products');
+        }, 1000);
     } catch (error) {
         res.status(500).json({ status: "error", message: customizeError('INTERNAL_SERVER_ERROR') });
     }

@@ -4,7 +4,6 @@ const User = require('../dao/models/users');
 const multer = require('multer');
 const path = require('path');
 const { logger } = require('../utils/logger');
-const { createAlert, createAlertWithCallback } = require('../utils/alerts');
 
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -138,21 +137,15 @@ router.post('/:uid/documents', upload.array('documents', 3), async (req, res) =>
 // Ruta para eliminar un usuario de la base de datos
 router.post('/delete-user/:userId', async (req, res) => {
     const { userId } = req.params;
-
     try {
-        // Buscar al usuario por su ID y eliminarlo de la base de datos
         await User.findByIdAndDelete(userId);
-        
-        createAlertWithCallback ('info', '¡Información!', 'Esta alerta se cerrará en 3 segundos.', () => {
-            console.log('La alerta ha sido cerrada.');
-            res.status(200).json({ message: 'Usuario eliminado exitosamente' });
-        });
+        // Redirigir a la página actual después de eliminar el usuario
+        res.redirect('/userEdit');
     } catch (error) {
         console.error('Error al eliminar usuario:', error);
         res.status(500).json({ message: 'Error interno del servidor al eliminar usuario' });
     }
 });
-
 
 
 module.exports = router;

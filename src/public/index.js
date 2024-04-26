@@ -78,7 +78,6 @@ async function submitUpdatedProduct(event) {
         if (!response.ok) {
             throw new Error('Error al actualizar el producto.');
         }
-        alert('Producto actualizado correctamente.');
         location.reload();  
     } catch (error) {
         logger.error('Error:', error);

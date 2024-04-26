@@ -10,27 +10,38 @@
 </head>
 <body class="container mt-5">
 
-    <h1>Información del Usuario Actual</h1>
+    <!-- Contenedor para alinear los elementos horizontalmente -->
+    <div class="row align-items-center mb-3">
+        <div class="col-md-6">
+            <h1 class="nowrap">Usuarios Registrados</h1>
+        </div>
+        <div class="col-md-6 text-right">
+            <a href="/userProfile" class="btn btn-primary">Volver a Perfil</a>
+        </div>
+    </div>
+
     {{#if user}}
     <div class="card mt-3">
         <div class="card-body">
             <table class="table">
                 <thead>
                     <tr>
-                        <th>NOMBRE</th>
-                        <th>APELLIDO</th>
-                        <th>MAIL</th>
-                        <th>ROL</th>
-                        <th>ACCIÓN</th>
+                        <th>FOTO</th>
+                        <th class="align-middle">NOMBRE</th>
+                        <th class="align-middle">APELLIDO</th>
+                        <th class="align-middle">MAIL</th>
+                        <th class="align-middle">ROL</th>
+                        <th class="align-middle">ACCIÓN</th>
                     </tr>
                 </thead>
                 <tbody>
                     {{#each allUsersPremiums}}
                         <tr>
-                            <td>{{this.first_name}}</td>
-                            <td>{{this.last_name}}</td>
-                            <td>{{this.email}}</td>
-                            <td>{{this.role}}</td>
+                            <td><img src="https://cdn-icons-png.flaticon.com/512/17/17004.png" alt="Foto de usuario" width="50"></td>
+                            <td class="align-middle">{{this.first_name}}</td>
+                            <td class="align-middle">{{this.last_name}}</td>
+                            <td class="align-middle">{{this.email}}</td>
+                            <td class="align-middle">{{this.role}}</td>
                             <td class="d-flex align-items-center">
                                 <form action="/api/users/premium/{{this._id}}" method="POST" class="mr-2">
                                     <select class="custom-select" name="newRole" style="width: 120px; font-size: 0.85rem;">
@@ -40,8 +51,8 @@
                                     </select>
                                     <button type="submit" class="btn btn-primary btn-sm mr-2">Cambiar</button>
                                 </form>
-                                <form action="/api/users/delete-user/{{this._id}}" method="POST">
-                                    <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                                <form id="deleteForm_{{this._id}}" action="/api/users/delete-user/{{this._id}}" method="POST">
+                                    <button type="button" class="btn btn-danger btn-sm deleteBtn">Eliminar</button>
                                 </form>
                             </td>
                         </tr>
@@ -57,6 +68,35 @@
 
 
 
+    <script>
+        // Obtener todos los botones de eliminar
+        const deleteButtons = document.querySelectorAll('.deleteBtn');
+
+        // Agregar un evento de clic a cada botón de eliminar
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function(event) {
+                const formId = button.parentElement.id;
+                
+                // Mostrar el cuadro de diálogo personalizado
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: '¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Sí, eliminar usuario',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    // Si el usuario confirma, enviar el formulario de eliminación
+                    if (result.isConfirmed) {
+                        const form = document.getElementById(formId);
+                        form.submit();
+                    }
+                });
+            });
+        });
+    </script>
 
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
