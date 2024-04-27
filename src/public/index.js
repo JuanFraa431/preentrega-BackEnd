@@ -1,3 +1,6 @@
+const {logger} = require("../utils/logger")
+
+
 
 function deleteProduct(productId) {
     if (confirm("¿Estás seguro de que deseas eliminar este producto?")) {
@@ -104,25 +107,29 @@ async function addToCart(productId, userId) {
         const cartResponse = await fetch(`/api/carts/${userId}`);
         const cartData = await cartResponse.json();
         let cartId;
+        
         if (cartData.status == "ok") {
             cartId = cartData.data._id;
         } else {
-            const newCartResponse =  await fetch(`/api/carts/${userId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ userId })
+            const newCartResponse = await fetch(`/api/carts/${userId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ userId })
             });
-            const newCartData =  await newCartResponse.json();
-            cartId = newCartData.carts._id;
+            
+            const newCartData = await newCartResponse.json();
+            cartId = newCartData.data._id; // Corrected access to cartId
         }
+
         const addToCartResponse = await fetch(`/api/carts/${cartId}/product/${productId}`, {
             method: 'POST',
             headers: {
-            'Content-Type': 'application/json'
+                'Content-Type': 'application/json'
             }
         });
+        
         const addToCartData = await addToCartResponse.json();
         alert(addToCartData.message);
     } catch (error) {

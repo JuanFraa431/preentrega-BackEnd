@@ -1,7 +1,7 @@
 // En mailServices.js
 const nodemailer = require('nodemailer');
 const User = require('../dao/models/users');
-const logger = require("../utils/logger")
+const {logger} = require("../utils/logger")
 
 async function sendPasswordResetEmail(email, token) {
     try {

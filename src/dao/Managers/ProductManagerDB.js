@@ -1,8 +1,5 @@
 const Product = require('../models/products.js');
-const { promises } = require("dns");
-const fs = require("fs");
-const { json } = require("stream/consumers");
-const logger = require("../../utils/logger.js")
+const {logger} = require("../../utils/logger.js")
 
 // Clase que gestiona las operaciones relacionadas con la base de datos para productos
 class ProductManagerDb {
@@ -15,7 +12,6 @@ class ProductManagerDb {
         try {
             const { title, description, price, code, stock, category, thumbnails } = productData;
 
-            // Verifica si ya existe un producto con el mismo código
             const existingProduct = await Product.findOne({ code });
 
             if (existingProduct) {

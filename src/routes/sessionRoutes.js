@@ -7,7 +7,7 @@ const { customizeError } = require("../middleware/errorHandler");
 const { sendPasswordResetEmail } = require('../utils/mailService.js');
 const { generateResetToken } = require('../utils/tokens.js');
 const bcrypt = require('bcrypt');
-const logger = require("../utils/logger.js")
+const {logger} = require("../utils/logger.js")
 //---------------------------------------------------------------------------------------
 
 // Ruta para el registro de usuarios

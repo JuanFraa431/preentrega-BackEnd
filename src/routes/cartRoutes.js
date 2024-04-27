@@ -4,9 +4,9 @@ const Cart = require('../dao/models/cart');
 const Product = require('../dao/models/products');
 const Ticket = require('../dao/models/ticket');
 const isAuthenticated = require('../middleware/auth.middleware')
-const logger = require('../utils/logger')
 const cartController = require('../controllers/cartController');
 const { customizeError } = require("../middleware/errorHandler");
+const { logger } = require('../utils/logger')
 
 //---------------------------------------------------------------------------------------
 
@@ -34,6 +34,12 @@ router.post('/:cid/purchase', async (req, res) => {
         if (!cart) {
             return res.status(404).json({ status: 'error', message: `Carrito con ID ${cartId} no encontrado.` });
         }
+
+        // Verificar si el carrito está vacío
+        if (cart.products.length === 0) {
+            return res.status(400).json({ status: 'error', message: 'El carrito está vacío. No se puede finalizar la compra.' });
+        }
+
         const products = cart.products;
         let totalAmount = 0;
         const ticketProducts = [];
@@ -71,6 +77,7 @@ router.post('/:cid/purchase', async (req, res) => {
         return res.status(500).json({ status: 'error', message: customizeError('INTERNAL_SERVER_ERROR') });
     }
 });
+
 
 module.exports = router;
 

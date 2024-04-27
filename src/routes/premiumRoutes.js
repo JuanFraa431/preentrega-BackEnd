@@ -17,7 +17,7 @@ router.post('/premium/:uid', async (req, res) => {
         const { newRole } = req.body;
 
         // Verifica si el nuevo rol es válido
-        if (newRole !== 'admin' && newRole !== 'premium' && newRole !== 'user') {
+        if (newRole !== 'admin' && newRole !== 'premium') {
             return res.status(400).json({ status: 'error', message: 'Rol inválido' });
         }
 
@@ -40,17 +40,21 @@ router.post('/premium/:uid', async (req, res) => {
             }
         }
 
-        // Actualiza el rol del usuario y guarda los cambios en la base de datos
-        user.role = newRole;
-        await user.save();
+        // Simula un retraso de un segundo antes de actualizar el rol del usuario
+        setTimeout(async () => {
+            // Actualiza el rol del usuario y guarda los cambios en la base de datos
+            user.role = newRole;
+            await user.save();
 
-        // Devuelve una respuesta exitosa
-        return res.status(200).json({ status: 'success', message: 'Rol de usuario actualizado correctamente a premium', user });
+            // Devuelve una respuesta exitosa después del retraso
+            return res.redirect("/userProfile")
+        }, 1000); // Retraso de 1 segundo
     } catch (error) {
         logger.error(error);
         return res.status(500).json({ status: 'error', message: 'Error interno del servidor' });
     }
 });
+
 
 
 router.get('/documents', (req, res) => {

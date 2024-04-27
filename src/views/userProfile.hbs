@@ -36,8 +36,11 @@
                     {{/if}}
                     {{#if isUser}}
                         <br>
-                        <form action="/api/users/premium/{{user._id}}" method="POST">
-                            <button type="submit" name="newRole" value="premium" class="btn btn-success mt-3">Ascender</button>
+                        <form id="ascendForm" action="/api/users/premium/{{user._id}}" method="POST">
+                            <!-- Cambia el botón a un botón normal y asigna un ID -->
+                            <button type="button" id="ascendButton" class="btn btn-success mt-3">Ascender</button>
+                            <!-- Agrega un campo oculto para enviar el nuevo rol -->
+                            <input type="hidden" name="newRole" value="premium">
                         </form>
                             
                     {{/if}}
@@ -85,6 +88,29 @@
                     logoutForm.submit();
                 }
             });
+        });
+
+        // Obtener el botón de ascender
+        const ascendButton = document.getElementById('ascendButton');
+        const ascendForm = document.getElementById('ascendForm');
+
+        // Agregar un evento de clic al botón de ascender
+        ascendButton.addEventListener('click', function(event) {
+            // Prevenir el envío del formulario
+            event.preventDefault();
+
+            // Mostrar un mensaje de "Ascendiendo usuario"
+            Swal.fire({
+                title: 'Ascendiendo usuario',
+                icon: 'success',
+                showConfirmButton: false,
+                timer: 1200 // Duración en milisegundos (1 segundo)
+            });
+
+            // Retrasar el envío del formulario para mostrar el Swal
+            setTimeout(function() {
+                ascendForm.submit();
+            }, 1200); // Retraso en milisegundos (1 segundo)
         });
     </script>
 </body>

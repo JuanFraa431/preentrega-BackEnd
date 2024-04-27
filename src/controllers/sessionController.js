@@ -2,7 +2,7 @@ const passport = require('passport');
 const bcrypt = require('bcrypt');
 const User = require('../dao/models/users');
 const { initializePassportGitHub, initializePassportLocal } = require('../config/passport.config')
-const logger = require("../utils/logger")
+const {logger} = require("../utils/logger")
 
 initializePassportLocal()
 initializePassportGitHub()
