@@ -14,6 +14,8 @@ exports.initializePassportGitHub = () => {
         callbackURL: 'http://preentrega-backend-production.up.railway.app/api/sessions/githubcallback',
     }, async (accessToken, refreshToken, profile, done) => {
         try {
+            
+            console.log("GitHub profile received:", profile); // Agregar este console.log()
             const githubEmail = profile.emails ? profile.emails[0].value : null;
 
             const existingUser = await User.findOne({ email: githubEmail });
