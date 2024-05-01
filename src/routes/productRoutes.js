@@ -159,6 +159,8 @@ router.delete('/:pid', async (req, res) => {
 
         await Product.findByIdAndDelete(productId);
 
+        const subject = "Notificación de eliminación de producto"
+
         const message = `
         <html lang="es">
         <head>
@@ -213,7 +215,7 @@ router.delete('/:pid', async (req, res) => {
         </html>
     `;
 
-        await mailService.sendNotificationEmail(ownerEmail, message);
+        await mailService.sendNotificationEmail(ownerEmail, message, subject);
 
         const io = req.app.get("io");
         io.emit("productDeleted", productId); 

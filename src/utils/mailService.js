@@ -95,7 +95,7 @@ async function sendPasswordResetEmail(email, token) {
     }
 }
 
-async function sendNotificationEmail(email, message) {
+async function sendNotificationEmail(email, message, subject) {
     try {
         const transporter = nodemailer.createTransport({
             service: 'gmail',
@@ -108,7 +108,7 @@ async function sendNotificationEmail(email, message) {
         const mailOptions = {
             from: 'juanfraa032@gmail.com', 
             to: email,
-            subject: 'Notificación de eliminación de producto',
+            subject: subject,
             html: message 
         };
 

@@ -18,11 +18,13 @@ const session = require('express-session');
 const passport = require('passport');
 const User = require('./dao/models/users');
 const sessionController = require('./controllers/sessionController');
+require('dotenv').config()
 const config = require('./config/config');
 const swaggerMiddleware = require('./middleware/swagger');
 const { addLogger, logger } = require('./utils/logger.js');
 const swaggerUiExpress = require('swagger-ui-express')
 const swaggerJsDoc = require('swagger-jsdoc')
+const path = require('path');
 
 const PORT = config.PORT;
 const MONGO_URL = config.MONGO_URL;
@@ -79,11 +81,11 @@ const hbs = handlebars.create({
     },
 });
 
-//aca iba serializate dessealizate y los github y local
+app.set('views', path.join(__dirname, 'views'));
 
 // Configurar Handlebars como motor de plantillas
 app.engine('hbs', hbs.engine);
-app.set('view engine', 'hbs')
+app.set('view engine', 'hbs');
 
 
 // Importar las rutas relacionadas con productos y carritos desde archivos externos

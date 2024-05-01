@@ -3,10 +3,76 @@ const router = express.Router();
 const User = require('../dao/models/users');
 const multer = require('multer');
 const path = require('path');
+const mailService = require('../utils/mailService'); 
 const { logger } = require('../utils/logger');
 
 
 //-------------------------------------------------------------------------------------------------------------------
+
+
+router.get('/', async (req, res) => {
+    try {
+        const users = await User.find({}, { first_name: 1, email: 1, role: 1 }); 
+
+        res.json(users);
+    } catch (error) {
+        console.error('Error al obtener usuarios:', error);
+        res.status(500).json({ message: 'Error interno del servidor al obtener usuarios' });
+    }
+});
+
+
+router.delete('/', async (req, res) => {
+    try {
+        const dosDiasAtras = new Date();
+        dosDiasAtras.setDate(dosDiasAtras.getDate() - 2); // Restar 2 días a la fecha actual
+
+        // Convertir la fecha de dos días atrás a formato ISO 8601
+        const dosDiasAtrasISO = dosDiasAtras.toISOString();
+
+        console.log("esta es la fecha", dosDiasAtrasISO)
+
+        // Obtener los correos electrónicos de los usuarios que cumplen con la condición
+        const usuariosEliminados = await User.find({ last_connection: { $lt: dosDiasAtrasISO } }).select('email');
+
+        // Almacenar los correos electrónicos en un array
+        const correosUsuariosEliminados = usuariosEliminados.map(usuario => usuario.email);
+
+        // Eliminar los usuarios que cumplen con la condición
+        await User.deleteMany({ last_connection: { $lt: dosDiasAtrasISO } });
+        
+        const subject = "Notificacion de eliminacion de cuenta por inactividad"
+        // Enviar correos electrónicos de notificación a los usuarios eliminados
+        for (const correo of correosUsuariosEliminados) {
+            const message = `
+                <html lang="es">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Notificación de eliminación de cuenta por inactividad</title>
+                    <style>
+                        /* Estilos CSS aquí */
+                    </style>
+                </head>
+                <body>
+                    <h1>Notificación de eliminación de cuenta por inactividad</h1>
+                    <p>Hola,</p>
+                    <p>Tu cuenta ha sido eliminada debido a la inactividad durante más de 2 días.</p>
+                    <p>Si necesitas recuperar tu cuenta, por favor contáctanos.</p>
+                    <p>Saludos,</p>
+                    <p>Tu equipo</p>
+                </body>
+                </html>
+            `;
+            await mailService.sendNotificationEmail(correo, message, subject);
+        }
+
+        res.json({ message: 'Usuarios inactivos eliminados correctamente' });
+    } catch (error) {
+        console.error('Error al limpiar usuarios inactivos:', error);
+        res.status(500).json({ message: 'Error interno del servidor al limpiar usuarios inactivos' });
+    }
+});
 
 router.post('/premium/:uid', async (req, res) => {
     try {
@@ -17,7 +83,7 @@ router.post('/premium/:uid', async (req, res) => {
         const { newRole } = req.body;
 
         // Verifica si el nuevo rol es válido
-        if (newRole !== 'admin' && newRole !== 'premium') {
+        if (newRole !== 'admin' && newRole !== 'premium' && newRole !== "user") {
             return res.status(400).json({ status: 'error', message: 'Rol inválido' });
         }
 
@@ -142,8 +208,38 @@ router.post('/:uid/documents', upload.array('documents', 3), async (req, res) =>
 router.post('/delete-user/:userId', async (req, res) => {
     const { userId } = req.params;
     try {
-        await User.findByIdAndDelete(userId);
-        // Redirigir a la página actual después de eliminar el usuario
+        // Encuentra al usuario que se eliminará
+        const deletedUser = await User.findByIdAndDelete(userId);
+        
+        // Verifica si se encontró y eliminó al usuario
+        if (!deletedUser) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+
+        const subject = 'Notificación de eliminación de cuenta';
+        const message = `
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>${subject}</title>
+                <style>
+                    /* Estilos CSS aquí */
+                </style>
+            </head>
+            <body>
+                <h1>${subject}</h1>
+                <p>Hola ${deletedUser.first_name},</p>
+                <p>Tu cuenta ha sido eliminada por un administrador.</p>
+                <p>Si tienes alguna pregunta, contáctanos.</p>
+                <p>Saludos,</p>
+                <p>Tu equipo</p>
+            </body>
+            </html>
+        `;
+        await mailService.sendNotificationEmail(deletedUser.email, message, subject);
+        
+        // Redirige a la página de edición de usuarios
         res.redirect('/userEdit');
     } catch (error) {
         console.error('Error al eliminar usuario:', error);
