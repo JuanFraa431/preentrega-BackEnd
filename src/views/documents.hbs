@@ -11,7 +11,7 @@
     <div class="container mt-5">
             <h1 class="mb-4">Subir Documentos</h1>
 
-            <form action="/api/users/{{userId}}/documents" method="post" enctype="multipart/form-data" class="mb-4" id="uploadForm">
+            <form action="/{{userId}}/documents" method="post" enctype="multipart/form-data" class="mb-4" id="uploadForm">
                 <div class="mb-3">
                     <label for="documentacion" class="form-label">Documentación:</label>
                     <input type="file"  name="documents" id="documentacion" class="form-control">
