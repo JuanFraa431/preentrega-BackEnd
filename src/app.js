@@ -82,6 +82,7 @@ const hbs = handlebars.create({
 });
 
 app.set('views', path.join(__dirname, 'views'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Configurar Handlebars como motor de plantillas
 app.engine('hbs', hbs.engine);
