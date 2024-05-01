@@ -157,7 +157,7 @@ const checkDocumentLimit = async (req, res, next) => {
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, '../uploads') // Ruta donde se guardarán los archivos
+        cb(null, '/uploads') // Ruta donde se guardarán los archivos
     },
     filename: function (req, file, cb) {
         cb(null, file.fieldname + '-' + Date.now()) // Nombre del archivo
