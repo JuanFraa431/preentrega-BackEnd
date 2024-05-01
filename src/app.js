@@ -25,7 +25,6 @@ const { addLogger, logger } = require('./utils/logger.js');
 const swaggerUiExpress = require('swagger-ui-express')
 const swaggerJsDoc = require('swagger-jsdoc')
 const path = require('path');
-const initializePassportGitHub = require('./config/passport.config.js');
 
 const PORT = config.PORT;
 const MONGO_URL = config.MONGO_URL;
@@ -65,9 +64,6 @@ app.use(session({
     resave: false, 
     saveUninitialized: false
 }))
-
-
-initializePassportGitHub(passport);
 
 app.use(passport.initialize());
 app.use(passport.session());

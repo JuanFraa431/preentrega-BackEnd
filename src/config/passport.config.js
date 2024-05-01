@@ -7,18 +7,13 @@ const { logger } = require('../utils/logger');
 
 
 
-exports.initializePassportGitHub = (passport) => {
-    const GitHubStrategy = require('passport-github2').Strategy; // Importa la estrategia de GitHub aquí si aún no lo has hecho
-    const bcrypt = require('bcrypt');
-    const User = require('../dao/models/users');
-
+exports.initializePassportGitHub = () => {
     passport.use(new GitHubStrategy({
         clientID: 'Iv1.bae1b407c6a21b7a',
         clientSecret: '9efac3cfd1014b4e04b82be282ea631bc97ba8b2',
         callbackURL: 'http://preentrega-backend-production.up.railway.app/api/sessions/githubcallback',
     }, async (accessToken, refreshToken, profile, done) => {
         try {
-            console.log("GitHub profile received:", profile); 
             const githubEmail = profile.emails ? profile.emails[0].value : null;
 
             const existingUser = await User.findOne({ email: githubEmail });
