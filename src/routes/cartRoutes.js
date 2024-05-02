@@ -7,7 +7,7 @@ const isAuthenticated = require('../middleware/auth.middleware')
 const cartController = require('../controllers/cartController');
 const { customizeError } = require("../middleware/errorHandler");
 const { logger } = require('../utils/logger')
-const sendNotificationEmail = require("../utils/mailService")
+const mailService = require("../utils/mailService")
 
 //---------------------------------------------------------------------------------------
 
@@ -74,7 +74,7 @@ router.post('/:cid/purchase', async (req, res) => {
         // Envío de correo electrónico al usuario
         const message = `¡Gracias por tu compra! Tu código de compra es: ${code}.`;
         const subject = 'Compra realizada exitosamente';
-        await sendNotificationEmail(req.user.email, message, subject);
+        await mailService.sendNotificationEmail(req.user.email, message, subject);
 
         cart.products = [];
         await cart.save();
