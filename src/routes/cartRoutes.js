@@ -96,6 +96,7 @@ router.post('/webhook/respuesta', async (req, res) => {
         const sig = req.headers['stripe-signature'];
         const event = req.body;
         console.log("body:", req.body)
+        console.log("typo de evento:", event.type )
 
         // Procesa el evento de Stripe aquí de forma asíncrona
         await processStripeWebhook(event);
@@ -109,7 +110,6 @@ router.post('/webhook/respuesta', async (req, res) => {
 });
 
 async function processStripeWebhook(event) {
-    // Procesa el evento de Stripe aquí
     console.log('Procesando evento de Stripe:', event.type);
 
     if (event.type === 'checkout.session.completed') {
