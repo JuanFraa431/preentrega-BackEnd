@@ -99,6 +99,7 @@ router.post('/webhook', async (req, res) => {
         return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
+    console.log('Evento recibido:', event.type);
 
     if (event.type === 'checkout.session.async_payment_succeeded') {
         const session = event.data.object;
