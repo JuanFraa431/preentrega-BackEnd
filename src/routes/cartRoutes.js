@@ -179,7 +179,7 @@ async function processStripeWebhook(event) {
                                 </div>
                                 <div class="ticket-body">
                                     <p class="ticket-code">Código de Compra: ${session.payment_intent}</p>
-                                    <p class="ticket-details">Fecha de Compra: ${formattedDate} Hora:${formattedTime}</p>
+                                    <p class="ticket-details">Fecha de Compra: ${formattedDate} Hora: ${formattedTime}</p>
                                     <p class="ticket-details">Productos Comprados:</p>
                                     <div class="products-list">
                                         ${await Promise.all(cart.products.map(async (item) => {
@@ -187,7 +187,7 @@ async function processStripeWebhook(event) {
                                             if (!product) return ''; 
                                             return `
                                                 <div class="product">
-                                                    <span class="product-name">${product.name}</span>
+                                                    <span class="product-name">${product.title}</span>
                                                     <span class="product-price">$${(product.price * item.quantity)} | Cantidad: ${item.quantity}</span>
                                                 </div>
                                             `;
