@@ -14,23 +14,6 @@ const bodyParser = require('body-parser');
 
 //---------------------------------------------------------------------------------------
 
-async function generateUniqueCode() {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let code;
-    let exists = true;
-    while (exists) {
-        code = '';
-        for (let i = 0; i < 6; i++) {
-            code += characters.charAt(Math.floor(Math.random() * characters.length));
-        }
-        
-        const existingTicket = await Ticket.findOne({ code });
-        exists = !!existingTicket;
-    }
-    return code;
-}
-
-
 router.post('/:cid/purchase', async (req, res) => {
     try {
         const cartId = req.params.cid;
@@ -127,9 +110,95 @@ async function processStripeWebhook(event) {
         const customerEmail = session.customer_details.email;
         console.log("esto contiene session:", session)
         console.log("este es el email que esto mandando", customerEmail)
-        const message = `¡Gracias por tu compra! Tu código de compra es: ${session.payment_intent}`;
+        const message = `
+    <html>
+    <head>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+            }
+            .ticket {
+                background-color: #f3f3f3;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                padding: 20px;
+                margin: 20px auto;
+                max-width: 600px;
+            }
+            .ticket-header {
+                background-color: #007bff;
+                color: #fff;
+                padding: 10px;
+                border-radius: 5px 5px 0 0;
+                text-align: center;
+            }
+            .ticket-body {
+                padding: 20px;
+            }
+            .ticket-code {
+                font-size: 20px;
+                font-weight: bold;
+                text-align: center;
+                margin-bottom: 20px;
+            }
+            .ticket-details {
+                margin-bottom: 20px;
+            }
+            .product {
+                border-bottom: 1px solid #ccc;
+                padding: 10px 0;
+            }
+            .product-name {
+                font-weight: bold;
+            }
+            .product-price {
+                float: right;
+            }
+            .ticket-total {
+                font-size: 18px;
+                font-weight: bold;
+                margin-top: 20px;
+                text-align: right;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="ticket">
+            <div class="ticket-header">
+                <h2>Tu Ticket de Compra</h2>
+            </div>
+            <div class="ticket-body">
+                <p class="ticket-code">Código de Compra: ${session.payment_intent}</p>
+                <p class="ticket-details">Fecha de Compra: ${new Date()}</p>
+                <p class="ticket-details">Productos Comprados:</p>
+                <div class="products-list">
+                    ${cart.products.map(item => `
+                        <div class="product">
+                            <span class="product-name">${item.title}</span>
+                            <span class="product-price">$${item.price.toFixed(2)}</span>
+                            <span class="product-price">${item.quantity}x</span>
+                            <span class="product-price">$${(item.price * item.quantity).toFixed(2)}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                <p class="ticket-total">Total: $${totalAmount.toFixed(2)}</p>
+                <p class="ticket-message">¡Gracias por tu compra!</p>
+            </div>
+        </div>
+    </body>
+    </html>
+`;
         const subject = 'Compra realizada exitosamente';
         await mailService.sendNotificationEmail(customerEmail, message, subject);
+
+        const ticketAmount = cart.totalAmount;
+        const ticket = new Ticket({
+            code: session.payment_intent,
+            amount: ticketAmount,
+            purchaser: customerEmail,
+            // Puedes agregar otros campos relevantes del ticket aquí
+        });
+        await ticket.save();
 
         for (const item of cart.products) {
             const product = await Product.findById(item.product);
