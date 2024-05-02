@@ -117,6 +117,9 @@ async function processStripeWebhook(event) {
             const product = await Product.findById(item.product);
             totalAmount += product.price * item.quantity;
         }
+        const currentDate = new Date();
+        const formattedDate = currentDate.toLocaleDateString('es-ES');
+        const formattedTime = currentDate.toLocaleTimeString('es-ES');
         const message = `
                         <html>
                         <head>
@@ -176,19 +179,19 @@ async function processStripeWebhook(event) {
                                 </div>
                                 <div class="ticket-body">
                                     <p class="ticket-code">Código de Compra: ${session.payment_intent}</p>
-                                    <p class="ticket-details">Fecha de Compra: ${new Date()}</p>
+                                    <p class="ticket-details">Fecha de Compra: ${formattedDate} Hora:${formattedTime}</p>
                                     <p class="ticket-details">Productos Comprados:</p>
                                     <div class="products-list">
-                                    ${await Promise.all(cart.products.map(async (item) => {
-                                        const product = await Product.findById(item.product);
-                                        if (!product) return ''; 
-                                        return `
-                                            <div class="product">
-                                                <span class="product-name">${product.name}</span>
-                                                <span class="product-price">$${(product.price * item.quantity)} | Cantidad: ${item.quantity}</span>
-                                            </div>
-                                        `;
-                                    }).join(''))}
+                                        ${await Promise.all(cart.products.map(async (item) => {
+                                            const product = await Product.findById(item.product);
+                                            if (!product) return ''; 
+                                            return `
+                                                <div class="product">
+                                                    <span class="product-name">${product.name}</span>
+                                                    <span class="product-price">$${(product.price * item.quantity)} | Cantidad: ${item.quantity}</span>
+                                                </div>
+                                            `;
+                                        })).then(htmlArray => htmlArray.join(''))}
                                     </div>
                                     <p class="ticket-total">Total: $${totalAmount}</p>
                                     <p class="ticket-message">¡Gracias por tu compra!</p>
@@ -196,7 +199,7 @@ async function processStripeWebhook(event) {
                             </div>
                         </body>
                         </html>
-        `;
+                    `;
         const subject = 'Compra realizada exitosamente';
         await mailService.sendNotificationEmail(customerEmail, message, subject);
 
