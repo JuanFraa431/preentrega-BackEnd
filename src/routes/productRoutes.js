@@ -9,6 +9,7 @@ const { customizeError } = require("../middleware/errorHandler");
 const mailService = require('../utils/mailService'); 
 const { logger } = require('../utils/logger');
 
+
 //---------------------------------------------------------------------------------------
 
 router.get("/", async (req, res) => {
@@ -16,13 +17,13 @@ router.get("/", async (req, res) => {
         // Verifica si el usuario está autenticado
         const user = req.user;
 
-        // Lógica para obtener los productos
+        // Lógica para obtener los productos con stock mayor que 0
         const { page = 1, limit = 20 } = req.query;
         const pageValue = parseInt(page);
         const limitValue = parseInt(limit);
-        const totalProducts = await Product.countDocuments();
+        const totalProducts = await Product.countDocuments({ stock: { $gt: 0 } }); // Solo cuenta los productos con stock mayor que 0
         const totalPages = Math.ceil(totalProducts / limitValue);
-        const products = await Product.find()
+        const products = await Product.find({ stock: { $gt: 0 } }) // Busca solo los productos con stock mayor que 0
             .limit(limitValue)
             .skip((pageValue - 1) * limitValue)
         const hasPrevPage = pageValue > 1;

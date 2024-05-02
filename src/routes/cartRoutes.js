@@ -8,6 +8,8 @@ const cartController = require('../controllers/cartController');
 const { customizeError } = require("../middleware/errorHandler");
 const { logger } = require('../utils/logger')
 const mailService = require("../utils/mailService")
+require('dotenv').config();
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 //---------------------------------------------------------------------------------------
 
@@ -36,7 +38,6 @@ router.post('/:cid/purchase', async (req, res) => {
             return res.status(404).json({ status: 'error', message: `Carrito con ID ${cartId} no encontrado.` });
         }
 
-        // Verificar si el carrito está vacío
         if (cart.products.length === 0) {
             return res.status(400).json({ status: 'error', message: 'El carrito está vacío. No se puede finalizar la compra.' });
         }
@@ -53,36 +54,91 @@ router.post('/:cid/purchase', async (req, res) => {
                 return res.status(400).json({ status: 'error', message: `Stock insuficiente para el producto ${product._id}.` });
             }
             totalAmount += product.price * item.quantity;
-            product.stock -= item.quantity;
-            await product.save();
             ticketProducts.push({
                 productId: product._id,
                 quantity: item.quantity,
                 price: product.price
             });
         }
-        
-        const code = await generateUniqueCode(); 
-        const ticket = new Ticket({
-            code: code, 
-            purchase_datetime: new Date(),
-            amount: totalAmount,
-            purchaser: req.user.email,
-        });
-        await ticket.save();
-        
-        // Envío de correo electrónico al usuario
-        const message = `¡Gracias por tu compra! Tu código de compra es: ${code}.`;
-        const subject = 'Compra realizada exitosamente';
-        await mailService.sendNotificationEmail(req.user.email, message, subject);
 
-        cart.products = [];
-        await cart.save();
-        return res.status(200).json({ status: 'success', message: 'Compra finalizada con éxito.', data: ticket });
-    }catch (error) {
-            console.error('Error en la compra:', error); // Cambiamos logger.error(error) por console.error(error)
-            return res.status(500).json({ status: 'error', message: 'Error interno del servidor. ' + error.message }); // Devolvemos también el mensaje de error
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            line_items: [
+                {
+                    price_data: {
+                        currency: 'usd',
+                        product_data: {
+                            name: 'Compra de productos', 
+                        },
+                        unit_amount: totalAmount * 100, 
+                    },
+                    quantity: 1,
+                },
+            ],
+            mode: 'payment',
+            success_url: 'https://preentrega-backend-production.up.railway.app/products', 
+            cancel_url: 'https://tu-web.com/cancel', 
+        });
+
+
+        return res.redirect(303, session.url); 
+    } catch (error) {
+        console.error('Error en la compra:', error);
+        return res.status(500).json({ status: 'error', message: 'Error interno del servidor. ' + error.message });
     }
+});
+
+
+router.post('/webhook', async (req, res) => {
+    const sig = req.headers['stripe-signature'];
+    let event;
+
+    try {
+        event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+    } catch (err) {
+        return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+
+    if (event.type === 'checkout.session.async_payment_succeeded') {
+        const session = event.data.object;
+        const customerEmail = session.customer_email;
+
+
+        const message = `¡Gracias por tu compra! Tu código de compra es: ${session.payment_intent}`;
+        const subject = 'Compra realizada exitosamente';
+        await mailService.sendNotificationEmail(customerEmail, message, subject);
+
+        const cart = await Cart.findOne({ user: customerEmail });
+        if (cart) {
+            cart.products = [];
+            await cart.save();
+        }
+
+
+        for (const item of session.display_items) {
+            const product = await Product.findById(item.custom.price.product);
+            product.stock -= item.quantity;
+            await product.save();
+        }
+
+
+        return res.status(200).send('Pago completado correctamente');
+    } else if (event.type === 'checkout.session.async_payment_failed') {
+        const session = event.data.object;
+        const customerEmail = session.customer_email;
+
+
+        const message = `Hubo un problema con el pago de tu compra. Por favor, intenta nuevamente.`;
+        const subject = 'Pago fallido';
+        await mailService.sendNotificationEmail(customerEmail, message, subject);
+
+        return res.status(200).send('Pago fallido');
+    }
+
+
+
+    res.status(200).end();
 });
 
 

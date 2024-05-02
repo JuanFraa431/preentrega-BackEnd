@@ -21,6 +21,7 @@
     "passport-local": "^1.0.0",
     "redis": "^4.6.13",
     "socket.io": "^4.7.2",
+    "stripe": "^15.4.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0",
     "sweetalert2": "^11.10.8",
