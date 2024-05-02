@@ -182,9 +182,7 @@ async function processStripeWebhook(event) {
                                         ${cart.products.map(item => `
                                             <div class="product">
                                                 <span class="product-name">${item.title}</span>
-                                                <span class="product-price">$${item.price}</span>
-                                                <span class="product-price">${item.quantity}x</span>
-                                                <span class="product-price">$${(item.price * cart.quantity)}</span>
+                                                <span class="product-price">$${(item.price * item.quantity)} | Cantidad:${item.quantity}</span>
                                             </div>
                                         `).join('')}
                                     </div>
