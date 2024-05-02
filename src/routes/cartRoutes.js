@@ -10,6 +10,7 @@ const { logger } = require('../utils/logger')
 const mailService = require("../utils/mailService")
 require('dotenv').config();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const bodyParser = require('body-parser');
 
 //---------------------------------------------------------------------------------------
 
@@ -90,7 +91,8 @@ router.post('/:cid/purchase', async (req, res) => {
 
 
 
-router.post('/webhook/respuesta', async (req, res) => {
+router.use(bodyParser.json());
+router.post('/webhook/respuesta', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
     const sig = req.headers['stripe-signature'];
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
