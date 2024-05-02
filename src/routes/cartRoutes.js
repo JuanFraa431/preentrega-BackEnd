@@ -79,9 +79,9 @@ router.post('/:cid/purchase', async (req, res) => {
         cart.products = [];
         await cart.save();
         return res.status(200).json({ status: 'success', message: 'Compra finalizada con éxito.', data: ticket });
-    } catch (error) {
-        logger.error(error);
-        return res.status(500).json({ status: 'error', message: customizeError('INTERNAL_SERVER_ERROR') });
+    }catch (error) {
+            console.error('Error en la compra:', error); // Cambiamos logger.error(error) por console.error(error)
+            return res.status(500).json({ status: 'error', message: 'Error interno del servidor. ' + error.message }); // Devolvemos también el mensaje de error
     }
 });
 
