@@ -81,39 +81,75 @@ router.post('/:cid/purchase', async (req, res) => {
             cancel_url: 'https://tu-web.com/cancel', 
         });
 
-        // Manejar eventos de Stripe dentro de la misma ruta de compra
+
+        return res.redirect(303, session.url); 
+    } catch (error) {
+        console.error('Error en la compra:', error);
+        return res.status(500).json({ status: 'error', message: 'Error interno del servidor. ' + error.message });
+    }
+});
+
+
+
+Entendido. Puedes separar la lógica del webhook en una ruta diferente, como /webhook/respuesta, para manejar específicamente las respuestas de Stripe. Aquí tienes un ejemplo de cómo podrías hacerlo:
+
+javascript
+Copy code
+const express = require('express');
+const router = express.Router();
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const mailService = require('../services/mailService');
+const Cart = require('../models/cart');
+const Product = require('../models/product');
+
+router.post('/:cid/purchase', async (req, res) => {
+    try {
+        // Lógica de compra del carrito
+        // ...
+
+        // Crear una sesión de pago en Stripe
+        const session = await stripe.checkout.sessions.create({
+            // Configuración de la sesión de pago
+        });
+
+        // Redirigir al usuario a la página de pago de Stripe
+        return res.redirect(303, session.url); 
+    } catch (error) {
+        console.error('Error en la compra:', error);
+        return res.status(500).json({ status: 'error', message: 'Error interno del servidor. ' + error.message });
+    }
+});
+
+router.post('/webhook/respuesta', async (req, res) => {
+    try {
         const sig = req.headers['stripe-signature'];
+        console.log('sig:', sig);
         let event;
+
         try {
             event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
         } catch (err) {
             console.error(`Webhook Error: ${err.message}`);
-            // Puedes manejar el error aquí
+            return res.status(400).send(`Webhook Error: ${err.message}`);
         }
 
-        if (event && event.type === 'checkout.session.completed') {
-            // Acciones adicionales después de que se complete el pago
-            console.log('Pago completado:', event.data.object);
+        console.log('Evento recibido:', event.type);
+
+        if (event.type === 'checkout.session.completed') {
+            // Lógica para manejar el evento de pago completado
+            // ...
+
+            // Ejemplo: Envío de correo electrónico de confirmación
             const session = event.data.object;
             const customerEmail = session.customer_email;
             const message = `¡Gracias por tu compra! Tu código de compra es: ${session.payment_intent}`;
             const subject = 'Compra realizada exitosamente';
             await mailService.sendNotificationEmail(customerEmail, message, subject);
+        } else if (event.type === 'checkout.session.async_payment_failed') {
+            // Lógica para manejar el evento de pago fallido
+            // ...
 
-            const cart = await Cart.findOne({ user: customerEmail });
-            if (cart) {
-                cart.products = [];
-                await cart.save();
-            }
-
-            for (const item of session.display_items) {
-                const product = await Product.findById(item.custom.price.product);
-                product.stock -= item.quantity;
-                await product.save();
-            }
-        } else if (event && event.type === 'checkout.session.async_payment_failed') {
-            // Acciones adicionales en caso de pago fallido
-            console.log('Pago fallido:', event.data.object);
+            // Ejemplo: Envío de correo electrónico de aviso de pago fallido
             const session = event.data.object;
             const customerEmail = session.customer_email;
             const message = `Hubo un problema con el pago de tu compra. Por favor, intenta nuevamente.`;
@@ -121,13 +157,14 @@ router.post('/:cid/purchase', async (req, res) => {
             await mailService.sendNotificationEmail(customerEmail, message, subject);
         }
 
-        // Devolver la URL de pago de Stripe para redireccionar al usuario
-        return res.redirect(303, session.url); 
+        // Devolver una respuesta exitosa al webhook de Stripe
+        res.status(200).end();
     } catch (error) {
-        console.error('Error en la compra:', error);
+        console.error('Error en el webhook:', error);
         return res.status(500).json({ status: 'error', message: 'Error interno del servidor. ' + error.message });
     }
 });
+
 
 
 module.exports = router;
