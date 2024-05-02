@@ -141,11 +141,11 @@ async function processStripeWebhook(event) {
         cart.products = [];
         await cart.save();
 
-    } else if (event.type === 'checkout.session.async_payment_failed') {
+    } else{
         // Acciones adicionales en caso de pago fallido
         console.log('Pago fallido:', event.data.object);
         const session = event.data.object;
-        const customerEmail = session.customer_email;
+        const customerEmail = session.customer_details.email;
         const message = `Hubo un problema con el pago de tu compra. Por favor, intenta nuevamente.`;
         const subject = 'Pago fallido';
         await mailService.sendNotificationEmail(customerEmail, message, subject);
