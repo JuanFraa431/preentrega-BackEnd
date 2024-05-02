@@ -90,7 +90,7 @@ router.post('/:cid/purchase', async (req, res) => {
 });
 
 
-router.post('/webhook', async (req, res) => {
+router.post('/webhook/respuesta', async (req, res) => {
     const sig = req.headers['stripe-signature'];
     let event;
 
