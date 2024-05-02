@@ -95,6 +95,7 @@ router.post('/webhook/respuesta', async (req, res) => {
     try {
         const sig = req.headers['stripe-signature'];
         const event = req.body;
+        console.log("body:", req.body)
 
         // Procesa el evento de Stripe aquí de forma asíncrona
         await processStripeWebhook(event);
