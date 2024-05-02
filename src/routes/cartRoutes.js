@@ -90,13 +90,12 @@ router.post('/:cid/purchase', async (req, res) => {
 });
 
 
-
 router.post('/webhook/respuesta', async (req, res) => {
     try {
         const sig = req.headers['stripe-signature'];
         const event = req.body;
         console.log("body:", req.body)
-        console.log("typo de evento:", event.type )
+        console.log("tipo de evento:", event.type)
 
         // Procesa el evento de Stripe aquí de forma asíncrona
         await processStripeWebhook(event);
@@ -118,7 +117,7 @@ async function processStripeWebhook(event) {
         const session = event.data.object;
         const customerEmail = session.customer_details.email;
         console.log("esto contiene session:", session)
-        console.log("este es el email que esto mandando",customerEmail)
+        console.log("este es el email que esto mandando", customerEmail)
         const message = `¡Gracias por tu compra! Tu código de compra es: ${session.payment_intent}`;
         const subject = 'Compra realizada exitosamente';
         await mailService.sendNotificationEmail(customerEmail, message, subject);
@@ -129,10 +128,18 @@ async function processStripeWebhook(event) {
             await cart.save();
         }
 
-        for (const item of session.display_items) {
-            const product = await Product.findById(item.custom.price.product);
-            product.stock -= item.quantity;
-            await product.save();
+        if (session.display_items && Array.isArray(session.display_items)) {
+            for (const item of session.display_items) {
+                const product = await Product.findById(item.custom.price.product);
+                if (product) {
+                    product.stock -= item.quantity;
+                    await product.save();
+                } else {
+                    console.error(`Producto no encontrado: ${item.custom.price.product}`);
+                }
+            }
+        } else {
+            console.log('No hay items para mostrar en display_items');
         }
     } else if (event.type === 'checkout.session.async_payment_failed') {
         // Acciones adicionales en caso de pago fallido
