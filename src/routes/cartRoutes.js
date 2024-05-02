@@ -177,7 +177,7 @@ async function processStripeWebhook(event) {
                             <span class="product-name">${item.title}</span>
                             <span class="product-price">$${item.price.toFixed(2)}</span>
                             <span class="product-price">${item.quantity}x</span>
-                            <span class="product-price">$${(item.price * item.quantity).toFixed(2)}</span>
+                            <span class="product-price">$${(item.price * cart.quantity).toFixed(2)}</span>
                         </div>
                     `).join('')}
                 </div>
