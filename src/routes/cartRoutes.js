@@ -10,7 +10,6 @@ const { logger } = require('../utils/logger')
 const mailService = require("../utils/mailService")
 require('dotenv').config();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 //---------------------------------------------------------------------------------------
 
@@ -89,37 +88,49 @@ router.post('/:cid/purchase', async (req, res) => {
     }
 });
 
-router.use(express.raw({ type: 'application/json' }));
+
+
 router.post('/webhook/respuesta', async (req, res) => {
+    const sig = req.headers['stripe-signature'];
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+    let event;
+
     try {
-        const sig = req.headers['stripe-signature'];
-        let event;
+        const buffer = [];
+        req.on('data', (chunk) => {
+            buffer.push(chunk);
+        });
 
-        try {
-            event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
-        } catch (err) {
-            console.error(`Webhook Error: ${err.message}`);
-            return res.status(400).send(`Webhook Error: ${err.message}`);
-        }
+        req.on('end', async () => {
+            const rawBody = Buffer.concat(buffer).toString();
 
-        console.log('Evento recibido:', event.type);
+            try {
+                event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
+            } catch (err) {
+                console.error('Webhook Error:', err.message);
+                return res.status(400).send(`Webhook Error: ${err.message}`);
+            }
 
-        if (event.type === 'checkout.session.completed') {
-            const session = event.data.object;
-            const customerEmail = session.customer_email;
-            const message = `¡Gracias por tu compra! Tu código de compra es: ${session.payment_intent}`;
-            const subject = 'Compra realizada exitosamente';
-            await mailService.sendNotificationEmail(customerEmail, message, subject);
-        } else if (event.type === 'checkout.session.async_payment_failed') {
-            const session = event.data.object;
-            const customerEmail = session.customer_email;
-            const message = `Hubo un problema con el pago de tu compra. Por favor, intenta nuevamente.`;
-            const subject = 'Pago fallido';
-            await mailService.sendNotificationEmail(customerEmail, message, subject);
-        }
+            console.log('Evento recibido:', event.type);
 
-        // Devolver una respuesta exitosa al webhook de Stripe
-        res.status(200).end();
+            if (event.type === 'checkout.session.completed') {
+                const session = event.data.object;
+                const customerEmail = session.customer_email;
+                const message = `¡Gracias por tu compra! Tu código de compra es: ${session.payment_intent}`;
+                const subject = 'Compra realizada exitosamente';
+                await mailService.sendNotificationEmail(customerEmail, message, subject);
+            } else if (event.type === 'checkout.session.async_payment_failed') {
+                const session = event.data.object;
+                const customerEmail = session.customer_email;
+                const message = `Hubo un problema con el pago de tu compra. Por favor, intenta nuevamente.`;
+                const subject = 'Pago fallido';
+                await mailService.sendNotificationEmail(customerEmail, message, subject);
+            }
+
+            // Devolver una respuesta exitosa al webhook de Stripe
+            res.status(200).end();
+        });
     } catch (error) {
         console.error('Error en el webhook:', error);
         return res.status(500).json({ status: 'error', message: 'Error interno del servidor. ' + error.message });
