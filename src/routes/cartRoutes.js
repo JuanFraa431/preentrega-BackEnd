@@ -117,6 +117,7 @@ async function processStripeWebhook(event) {
         console.log('Pago completado:', event.data.object);
         const session = event.data.object;
         const customerEmail = session.email;
+        console.log("esto contiene session:", session)
         console.log("este es el email que esto mandando",customerEmail)
         const message = `¡Gracias por tu compra! Tu código de compra es: ${session.payment_intent}`;
         const subject = 'Compra realizada exitosamente';
