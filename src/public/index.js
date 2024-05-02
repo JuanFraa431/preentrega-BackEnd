@@ -1,4 +1,3 @@
-
 function deleteProduct(productId) {
     if (confirm("¿Estás seguro de que deseas eliminar este producto?")) {
         fetch(`/products/${productId}`, {
@@ -12,7 +11,9 @@ function deleteProduct(productId) {
         })
         .then(data => {
             console.info('Respuesta del servidor:', data); 
-            window.location.reload(); 
+            setTimeout(() => {
+                window.location.reload(); 
+            }, 500); // Esperar 500 milisegundos (medio segundo) antes de recargar la página
         })
         .catch(error => {
             console.error('Error:', error);
