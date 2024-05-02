@@ -221,8 +221,7 @@ router.delete('/:pid', async (req, res) => {
         const io = req.app.get("io");
         io.emit("productDeleted", productId); 
         
-
-        res.redirect("/products");
+        location.reload(); 
     } catch (error) {
         console.error('Error al eliminar el producto:', error);
         res.status(500).json({ status: "error", message: customizeError('INTERNAL_SERVER_ERROR') });
