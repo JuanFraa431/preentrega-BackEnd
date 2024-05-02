@@ -1,4 +1,4 @@
-const Product = require('../models/products.js');
+/* const Product = require('../models/products.js');
 const {logger} = require("../../utils/logger.js")
 
 // Clase que gestiona las operaciones relacionadas con la base de datos para productos
@@ -113,3 +113,4 @@ class ProductManagerDb {
 }
 
 module.exports = ProductManagerDb;
+ */
