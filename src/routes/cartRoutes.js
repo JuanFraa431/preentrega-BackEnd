@@ -89,7 +89,7 @@ router.post('/:cid/purchase', async (req, res) => {
     }
 });
 
-
+router.use(express.raw({ type: 'application/json' }));
 router.post('/webhook/respuesta', async (req, res) => {
     try {
         const sig = req.headers['stripe-signature'];
@@ -105,20 +105,12 @@ router.post('/webhook/respuesta', async (req, res) => {
         console.log('Evento recibido:', event.type);
 
         if (event.type === 'checkout.session.completed') {
-            // Lógica para manejar el evento de pago completado
-            // ...
-
-            // Ejemplo: Envío de correo electrónico de confirmación
             const session = event.data.object;
             const customerEmail = session.customer_email;
             const message = `¡Gracias por tu compra! Tu código de compra es: ${session.payment_intent}`;
             const subject = 'Compra realizada exitosamente';
             await mailService.sendNotificationEmail(customerEmail, message, subject);
         } else if (event.type === 'checkout.session.async_payment_failed') {
-            // Lógica para manejar el evento de pago fallido
-            // ...
-
-            // Ejemplo: Envío de correo electrónico de aviso de pago fallido
             const session = event.data.object;
             const customerEmail = session.customer_email;
             const message = `Hubo un problema con el pago de tu compra. Por favor, intenta nuevamente.`;
