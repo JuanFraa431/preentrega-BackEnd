@@ -78,7 +78,10 @@ router.post('/:cid/purchase', async (req, res) => {
             ],
             mode: 'payment',
             success_url: 'https://preentrega-backend-production.up.railway.app/products', 
-            cancel_url: 'https://tu-web.com/cancel', 
+            cancel_url: 'https://tu-web.com/cancel',
+            metadata: {
+                cartId: cartId
+            } 
         });
 
 
@@ -115,6 +118,12 @@ async function processStripeWebhook(event) {
         // Acciones adicionales después de que se complete el pago
         console.log('Pago completado:', event.data.object);
         const session = event.data.object;
+        const cartId = session.metadata.cartId;
+        const cart = await Cart.findById(cartId);
+        if (!cart) {
+            console.error(`Carrito con ID ${cartId} no encontrado`);
+            return;
+        }
         const customerEmail = session.customer_details.email;
         console.log("esto contiene session:", session)
         console.log("este es el email que esto mandando", customerEmail)
@@ -122,25 +131,16 @@ async function processStripeWebhook(event) {
         const subject = 'Compra realizada exitosamente';
         await mailService.sendNotificationEmail(customerEmail, message, subject);
 
-        const cart = await Cart.findOne({ user: customerEmail });
-        if (cart) {
-            cart.products = [];
-            await cart.save();
-        }
-
-        if (session.display_items && Array.isArray(session.display_items)) {
-            for (const item of session.display_items) {
-                const product = await Product.findById(item.custom.price.product);
-                if (product) {
-                    product.stock -= item.quantity;
-                    await product.save();
-                } else {
-                    console.error(`Producto no encontrado: ${item.custom.price.product}`);
-                }
+        for (const item of cart.products) {
+            const product = await Product.findById(item.product);
+            if (product) {
+                product.stock -= item.quantity;
+                await product.save();
             }
-        } else {
-            console.log('No hay items para mostrar en display_items');
         }
+        cart.products = [];
+        await cart.save();
+
     } else if (event.type === 'checkout.session.async_payment_failed') {
         // Acciones adicionales en caso de pago fallido
         console.log('Pago fallido:', event.data.object);
