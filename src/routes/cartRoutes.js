@@ -90,40 +90,9 @@ router.post('/:cid/purchase', async (req, res) => {
 });
 
 
-
-Entendido. Puedes separar la lógica del webhook en una ruta diferente, como /webhook/respuesta, para manejar específicamente las respuestas de Stripe. Aquí tienes un ejemplo de cómo podrías hacerlo:
-
-javascript
-Copy code
-const express = require('express');
-const router = express.Router();
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const mailService = require('../services/mailService');
-const Cart = require('../models/cart');
-const Product = require('../models/product');
-
-router.post('/:cid/purchase', async (req, res) => {
-    try {
-        // Lógica de compra del carrito
-        // ...
-
-        // Crear una sesión de pago en Stripe
-        const session = await stripe.checkout.sessions.create({
-            // Configuración de la sesión de pago
-        });
-
-        // Redirigir al usuario a la página de pago de Stripe
-        return res.redirect(303, session.url); 
-    } catch (error) {
-        console.error('Error en la compra:', error);
-        return res.status(500).json({ status: 'error', message: 'Error interno del servidor. ' + error.message });
-    }
-});
-
 router.post('/webhook/respuesta', async (req, res) => {
     try {
         const sig = req.headers['stripe-signature'];
-        console.log('sig:', sig);
         let event;
 
         try {
@@ -164,7 +133,6 @@ router.post('/webhook/respuesta', async (req, res) => {
         return res.status(500).json({ status: 'error', message: 'Error interno del servidor. ' + error.message });
     }
 });
-
 
 
 module.exports = router;
