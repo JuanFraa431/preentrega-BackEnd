@@ -1,6 +1,3 @@
-const {logger} = require("../utils/logger")
-
-
 
 function deleteProduct(productId) {
     if (confirm("¿Estás seguro de que deseas eliminar este producto?")) {
@@ -14,15 +11,16 @@ function deleteProduct(productId) {
             return response.text(); 
         })
         .then(data => {
-            logger.info('Respuesta del servidor:', data); 
+            console.info('Respuesta del servidor:', data); 
             window.location.reload(); 
         })
         .catch(error => {
-            logger.error('Error:', error);
+            console.error('Error:', error);
             alert('Hubo un problema al eliminar el producto.');
         });
     }
 }
+
 async function getProductById(productId) {
     try {
         const response = await fetch(`/products/${productId}`);
@@ -52,7 +50,7 @@ async function updateProduct(productId) {
             editButton.id = product.data._id;
         }
     } catch (error) {
-        logger.error('Error:', error);
+        console.error('Error:', error);
         alert('Hubo un problema al cargar el formulario de edición del producto.');
     }
 }
@@ -83,7 +81,7 @@ async function submitUpdatedProduct(event) {
         }
         location.reload();  
     } catch (error) {
-        logger.error('Error:', error);
+        console.error('Error:', error);
         alert('Hubo un problema al actualizar el producto.');
     }
 }
@@ -133,7 +131,7 @@ async function addToCart(productId, userId) {
         const addToCartData = await addToCartResponse.json();
         alert(addToCartData.message);
     } catch (error) {
-        logger.error('Error al agregar el producto al carrito:', error);
+        console.error('Error al agregar el producto al carrito:', error);
         alert('Hubo un problema al agregar el producto al carrito.');
     }
 }
@@ -151,7 +149,7 @@ function redirectToCart(userId) {
             window.location.href = `/api/carts/${cartId}/purchase`
         })
         .catch(error => {
-            logger.error('Error al redirigir al carrito:', error);
+            console.error('Error al redirigir al carrito:', error);
             alert(error.message);
         });
 }
@@ -202,11 +200,10 @@ async function eliminarProductoCarrito(cartId, productId) {
             }
 
         } else {
-            logger.error('Error al eliminar el producto:', response.statusText);
+            console.error('Error al eliminar el producto:', response.statusText);
             
         }
     } catch (error) {
-        logger.error('Error al eliminar el producto:', error);
+        console.error('Error al eliminar el producto:', error);
     }
 }
-
