@@ -10,6 +10,7 @@ const { logger } = require('../utils/logger')
 const mailService = require("../utils/mailService")
 require('dotenv').config();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 //---------------------------------------------------------------------------------------
 
@@ -94,7 +95,7 @@ router.post('/webhook', async (req, res) => {
     let event;
 
     try {
-        event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+        event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
     } catch (err) {
         return res.status(400).send(`Webhook Error: ${err.message}`);
     }
@@ -104,7 +105,6 @@ router.post('/webhook', async (req, res) => {
     if (event.type === 'checkout.session.async_payment_succeeded') {
         const session = event.data.object;
         const customerEmail = session.customer_email;
-
 
         const message = `¡Gracias por tu compra! Tu código de compra es: ${session.payment_intent}`;
         const subject = 'Compra realizada exitosamente';
@@ -116,19 +116,16 @@ router.post('/webhook', async (req, res) => {
             await cart.save();
         }
 
-
         for (const item of session.display_items) {
             const product = await Product.findById(item.custom.price.product);
             product.stock -= item.quantity;
             await product.save();
         }
 
-
         return res.status(200).send('Pago completado correctamente');
     } else if (event.type === 'checkout.session.async_payment_failed') {
         const session = event.data.object;
         const customerEmail = session.customer_email;
-
 
         const message = `Hubo un problema con el pago de tu compra. Por favor, intenta nuevamente.`;
         const subject = 'Pago fallido';
@@ -136,8 +133,6 @@ router.post('/webhook', async (req, res) => {
 
         return res.status(200).send('Pago fallido');
     }
-
-
 
     res.status(200).end();
 });
