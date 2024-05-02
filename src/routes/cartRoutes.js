@@ -108,7 +108,7 @@ router.post('/webhook/respuesta', async (req, res) => {
     }
 });
 
-async function processStripeWebhook(req, event) {
+async function processStripeWebhook(event) {
     // Procesa el evento de Stripe aquí
     console.log('Procesando evento de Stripe:', event.type);
 
