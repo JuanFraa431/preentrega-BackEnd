@@ -91,53 +91,56 @@ router.post('/:cid/purchase', async (req, res) => {
 
 
 
-router.use(bodyParser.json());
-router.post('/webhook/respuesta', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
-    const sig = req.headers['stripe-signature'];
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
-    let event;
-
+router.post('/webhook/respuesta', async (req, res) => {
     try {
-        const buffer = [];
-        req.on('data', (chunk) => {
-            buffer.push(chunk);
-        });
+        const sig = req.headers['stripe-signature'];
+        const event = req.body;
 
-        req.on('end', async () => {
-            const rawBody = Buffer.concat(buffer).toString();
+        // Procesa el evento de Stripe aquí de forma asíncrona
+        await processStripeWebhook(event);
 
-            try {
-                event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
-            } catch (err) {
-                console.error('Webhook Error:', err.message);
-                return res.status(400).send(`Webhook Error: ${err.message}`);
-            }
-
-            console.log('Evento recibido:', event.type);
-
-            if (event.type === 'checkout.session.completed') {
-                const session = event.data.object;
-                const customerEmail = session.customer_email;
-                const message = `¡Gracias por tu compra! Tu código de compra es: ${session.payment_intent}`;
-                const subject = 'Compra realizada exitosamente';
-                await mailService.sendNotificationEmail(customerEmail, message, subject);
-            } else if (event.type === 'checkout.session.async_payment_failed') {
-                const session = event.data.object;
-                const customerEmail = session.customer_email;
-                const message = `Hubo un problema con el pago de tu compra. Por favor, intenta nuevamente.`;
-                const subject = 'Pago fallido';
-                await mailService.sendNotificationEmail(customerEmail, message, subject);
-            }
-
-            // Devolver una respuesta exitosa al webhook de Stripe
-            res.status(200).end();
-        });
+        // Devuelve una respuesta inmediata a Stripe para evitar que agote el tiempo de espera
+        res.status(200).end();
     } catch (error) {
-        console.error('Error en el webhook:', error);
-        return res.status(500).json({ status: 'error', message: 'Error interno del servidor. ' + error.message });
+        console.error('Error en el webhook de Stripe:', error);
+        res.status(500).send('Error interno del servidor');
     }
 });
+
+async function processStripeWebhook(event) {
+    // Procesa el evento de Stripe aquí
+    console.log('Procesando evento de Stripe:', event.type);
+
+    if (event.type === 'checkout.session.completed') {
+        // Acciones adicionales después de que se complete el pago
+        console.log('Pago completado:', event.data.object);
+        const session = event.data.object;
+        const customerEmail = session.customer_email;
+        const message = `¡Gracias por tu compra! Tu código de compra es: ${session.payment_intent}`;
+        const subject = 'Compra realizada exitosamente';
+        await mailService.sendNotificationEmail(customerEmail, message, subject);
+
+        const cart = await Cart.findOne({ user: customerEmail });
+        if (cart) {
+            cart.products = [];
+            await cart.save();
+        }
+
+        for (const item of session.display_items) {
+            const product = await Product.findById(item.custom.price.product);
+            product.stock -= item.quantity;
+            await product.save();
+        }
+    } else if (event.type === 'checkout.session.async_payment_failed') {
+        // Acciones adicionales en caso de pago fallido
+        console.log('Pago fallido:', event.data.object);
+        const session = event.data.object;
+        const customerEmail = session.customer_email;
+        const message = `Hubo un problema con el pago de tu compra. Por favor, intenta nuevamente.`;
+        const subject = 'Pago fallido';
+        await mailService.sendNotificationEmail(customerEmail, message, subject);
+    }
+}
 
 
 module.exports = router;
