@@ -1,22 +1,21 @@
 
 async function deleteProduct(productId) {
     if (confirm("¿Estás seguro de que deseas eliminar este producto?")) {
-        fetch(`/products/${productId}`, {
-            method: 'DELETE',
-        })
-        .then(response => {
+        try {
+            const response = await fetch(`/products/${productId}`, {
+                method: 'DELETE',
+            });
+            
             if (!response.ok) {
-                window.location.reload(); 
+                throw new Error('La eliminación del producto no fue exitosa.');
             }
-            return response.text(); 
-        })
-        .then(data => {
-            console.info('Respuesta del servidor:', data); 
-        })
-        .catch(error => {
+            
+            console.info('Producto eliminado correctamente.');
+            window.location.reload();
+        } catch (error) {
             console.error('Error:', error);
             alert('Hubo un problema al eliminar el producto.');
-        });
+        }
     }
 }
 
