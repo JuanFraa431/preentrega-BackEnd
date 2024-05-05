@@ -9,7 +9,6 @@ const { logger } = require('../utils/logger');
 
 //-------------------------------------------------------------------------------------------------------------------
 
-
 router.get('/', async (req, res) => {
     try {
         const users = await User.find({}, { first_name: 1, email: 1, role: 1 }); 
@@ -25,24 +24,13 @@ router.get('/', async (req, res) => {
 router.delete('/', async (req, res) => {
     try {
         const dosDiasAtras = new Date();
-        dosDiasAtras.setDate(dosDiasAtras.getDate() - 2); // Restar 2 días a la fecha actual
-
-        // Convertir la fecha de dos días atrás a formato ISO 8601
+        dosDiasAtras.setDate(dosDiasAtras.getDate() - 2);
         const dosDiasAtrasISO = dosDiasAtras.toISOString();
-
         console.log("esta es la fecha", dosDiasAtrasISO)
-
-        // Obtener los correos electrónicos de los usuarios que cumplen con la condición
         const usuariosEliminados = await User.find({ last_connection: { $lt: dosDiasAtrasISO } }).select('email');
-
-        // Almacenar los correos electrónicos en un array
         const correosUsuariosEliminados = usuariosEliminados.map(usuario => usuario.email);
-
-        // Eliminar los usuarios que cumplen con la condición
         await User.deleteMany({ last_connection: { $lt: dosDiasAtrasISO } });
-        
         const subject = "Notificacion de eliminacion de cuenta por inactividad"
-        // Enviar correos electrónicos de notificación a los usuarios eliminados
         for (const correo of correosUsuariosEliminados) {
             const message = `
                 <html lang="es">
@@ -76,25 +64,19 @@ router.delete('/', async (req, res) => {
 
 router.post('/premium/:uid', async (req, res) => {
     try {
-        // Obtiene el ID de usuario de los parámetros de la URL
         const userId = req.params.uid;
 
-        // Obtiene el nuevo rol del cuerpo de la solicitud
         const { newRole } = req.body;
 
-        // Verifica si el nuevo rol es válido
         if (newRole !== 'admin' && newRole !== 'premium' && newRole !== "user") {
             return res.status(400).json({ status: 'error', message: 'Rol inválido' });
         }
 
-        // Busca el usuario por su ID en la base de datos
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ status: 'error', message: 'Usuario no encontrado' });
         }
 
-        // Si el usuario que está realizando la solicitud no es un administrador,
-        // verifica si el usuario tiene los archivos necesarios para ser premium
         if (req.user.role !== 'admin') {
             const requiredDocuments = ['Documentacion', 'ConstanciaDireccion', 'ConstanciaCuenta'];
             const userDocuments = user.documents.map(doc => doc.name);
@@ -106,22 +88,17 @@ router.post('/premium/:uid', async (req, res) => {
             }
         }
 
-        // Simula un retraso de un segundo antes de actualizar el rol del usuario
         setTimeout(async () => {
-            // Actualiza el rol del usuario y guarda los cambios en la base de datos
             user.role = newRole;
             await user.save();
 
-            // Devuelve una respuesta exitosa después del retraso
             return res.redirect("/userProfile")
-        }, 1000); // Retraso de 1 segundo
+        }, 1000); 
     } catch (error) {
         logger.error(error);
         return res.status(500).json({ status: 'error', message: 'Error interno del servidor' });
     }
 });
-
-
 
 router.get('/documents', (req, res) => {
     if (req.isAuthenticated()) {
@@ -136,18 +113,15 @@ const checkDocumentLimit = async (req, res, next) => {
     try {
         const userId = req.params.uid;
 
-        // Busca el usuario por su ID en la base de datos para obtener sus documentos
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ status: 'error', message: 'Usuario no encontrado' });
         }
 
-        // Verifica la longitud del array de documentos del usuario
         if (user.documents.length >= 3) {
             return res.status(400).json({ status: 'error', message: 'Se excede el límite de documentos permitidos (máximo 3)' });
         }
 
-        // Si no se excede el límite, continúa con el siguiente middleware
         next();
     } catch (error) {
         logger.error(error);
@@ -157,47 +131,37 @@ const checkDocumentLimit = async (req, res, next) => {
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, path.join(__dirname, '../uploads')) // Ruta absoluta donde se guardarán los archivos
+        cb(null, path.join(__dirname, '../uploads'))
     },
     filename: function (req, file, cb) {
-        cb(null, file.fieldname + '-' + Date.now()) // Nombre del archivo
+        cb(null, file.fieldname + '-' + Date.now())
     }
 });
-
 
 const upload = multer({ storage });
 
 router.post('/:uid/documents', upload.array('documents', 3), async (req, res) => {
     try {
-        // Obtiene el ID de usuario de los parámetros de la URL
         const userId = req.params.uid;
 
-        // Busca el usuario por su ID en la base de datos
         let user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ status: 'error', message: 'Usuario no encontrado' });
         }
 
-        // Limpiar documentos anteriores si existen
         user.documents = [];
 
-        // Itera sobre los archivos cargados
         req.files.forEach(file => {
-            // Extrae el nombre del archivo sin la extensión
             const fileNameWithoutExtension = file.originalname.split('.').slice(0, -1).join('.');
-
-            // Agrega la información relevante de cada archivo al array 'documents' del usuario
             user.documents.push({
                 name: fileNameWithoutExtension,
-                reference: file.path // O la ubicación donde se guarda el archivo en tu sistema
+                reference: file.path
             });
         });
 
-        // Guarda los cambios en el usuario en la base de datos
         user = await user.save();
 
-        // Devuelve una respuesta exitosa
-        return res.status(200).json({ status: 'success', message: 'Documentos actualizados con éxito', user });
+        return res.redirect('/userProfile');
 
     } catch (error) {
         logger.error(error);
@@ -205,14 +169,11 @@ router.post('/:uid/documents', upload.array('documents', 3), async (req, res) =>
     }
 });
 
-// Ruta para eliminar un usuario de la base de datos
 router.post('/delete-user/:userId', async (req, res) => {
     const { userId } = req.params;
     try {
-        // Encuentra al usuario que se eliminará
         const deletedUser = await User.findByIdAndDelete(userId);
         
-        // Verifica si se encontró y eliminó al usuario
         if (!deletedUser) {
             return res.status(404).json({ message: 'Usuario no encontrado' });
         }
@@ -240,7 +201,6 @@ router.post('/delete-user/:userId', async (req, res) => {
         `;
         await mailService.sendNotificationEmail(deletedUser.email, message, subject);
         
-        // Redirige a la página de edición de usuarios
         res.redirect('/userEdit');
     } catch (error) {
         console.error('Error al eliminar usuario:', error);

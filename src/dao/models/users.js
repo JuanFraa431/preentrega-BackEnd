@@ -1,9 +1,7 @@
-// Importa los módulos necesarios
 const mongoose = require('mongoose');
 const mongoosePaginate = require('mongoose-paginate-v2');
 const Schema = mongoose.Schema;
 
-// Define el esquema para los documentos
 const documentSchema = new Schema({
     name: String,
     reference: String
