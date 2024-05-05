@@ -202,12 +202,11 @@ async function processStripeWebhook(event) {
         const subject = 'Compra realizada exitosamente';
         await mailService.sendNotificationEmail(customerEmail, message, subject);
 
-        const ticketAmount = cart.totalAmount;
+        const ticketAmount = totalAmount;
         const ticket = new Ticket({
             code: session.payment_intent,
             amount: ticketAmount,
             purchaser: customerEmail,
-            // Puedes agregar otros campos relevantes del ticket aquí
         });
         await ticket.save();
 
