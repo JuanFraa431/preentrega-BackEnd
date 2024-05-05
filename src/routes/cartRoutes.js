@@ -4,7 +4,6 @@ const Cart = require('../dao/models/cart');
 const Product = require('../dao/models/products');
 const Ticket = require('../dao/models/ticket');
 const isAuthenticated = require('../middleware/auth.middleware')
-const cartController = require('../controllers/cartController');
 const { customizeError } = require("../middleware/errorHandler");
 const { logger } = require('../utils/logger')
 const mailService = require("../utils/mailService")
