@@ -27,6 +27,7 @@ exports.initializePassportGitHub = () => {
                 const hashedPassword = await bcrypt.hash(password, 10);
                 const newUser = new User({
                     first_name: profile.displayName,
+                    last_name:"usuarioGithub",
                     email: githubEmail,
                     password: hashedPassword,
                     role: "user"
