@@ -16,6 +16,8 @@ exports.initializePassportGitHub = () => {
         try {
             const githubEmail = profile.emails ? profile.emails[0].value : null;
 
+            console.log("este es el mail que intente usar:", githubEmail)
+
             const existingUser = await User.findOne({ email: githubEmail });
 
             if (existingUser) {
