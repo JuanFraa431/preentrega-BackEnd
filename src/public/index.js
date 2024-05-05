@@ -1,18 +1,17 @@
 
-function deleteProduct(productId) {
+async function deleteProduct(productId) {
     if (confirm("¿Estás seguro de que deseas eliminar este producto?")) {
         fetch(`/products/${productId}`, {
             method: 'DELETE',
         })
         .then(response => {
             if (!response.ok) {
-                throw new Error('La solicitud DELETE falló');
+                window.location.reload(); 
             }
             return response.text(); 
         })
         .then(data => {
             console.info('Respuesta del servidor:', data); 
-            window.location.reload(); 
         })
         .catch(error => {
             console.error('Error:', error);

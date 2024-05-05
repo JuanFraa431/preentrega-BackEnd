@@ -3,7 +3,6 @@ const express = require("express");
 const router = express.Router();
 const productosController = require("../controllers/productController");
 const Product = require("../dao/models/products");
-const ProductManagerDb = require("../dao/Managers/ProductManagerDB");
 const User = require('../dao/models/users');
 const { customizeError } = require("../middleware/errorHandler");
 const mailService = require('../utils/mailService'); 
@@ -156,11 +155,16 @@ router.delete('/:pid', async (req, res) => {
             return res.status(404).json({ status: "error", message: customizeError('USER_NOT_FOUND') });
         }
 
+        const io = req.app.get("io");
+        io.emit("productDeleted", productId); 
+
         const ownerEmail = user.email; 
 
         await Product.findByIdAndDelete(productId);
 
         const subject = "Notificación de eliminación de producto"
+
+
 
         const message = `
         <html lang="es">
@@ -217,12 +221,8 @@ router.delete('/:pid', async (req, res) => {
     `;
 
         await mailService.sendNotificationEmail(ownerEmail, message, subject);
-
-        const io = req.app.get("io");
-        io.emit("productDeleted", productId); 
         
-
-        res.redirect("/products");
+        res.status(200).json({ status: "success", message: "Producto eliminado correctamente" });
     } catch (error) {
         console.error('Error al eliminar el producto:', error);
         res.status(500).json({ status: "error", message: customizeError('INTERNAL_SERVER_ERROR') });
