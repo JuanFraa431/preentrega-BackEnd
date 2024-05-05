@@ -49,6 +49,14 @@ const specs = swaggerJsDoc(options);
 app.use('/apidocs', swaggerUiExpress.serve, swaggerUiExpress.setup(specs))
 
 
+app.use((req, res, next) => {
+    if (req.url === '/') {
+        return res.redirect('/products');
+    }
+    next();
+});
+
+
 app.use(express.json());
 
 app.use(bodyParser.urlencoded({ extended: true }));
