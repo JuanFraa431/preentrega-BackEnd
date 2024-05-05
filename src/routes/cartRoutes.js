@@ -118,7 +118,7 @@ async function processStripeWebhook(event) {
         }
         const currentDate = new Date();
         const formattedDate = currentDate.toLocaleDateString('es-ES');
-        const formattedTime = currentDate.toLocaleTimeString('es-ES');
+        const formattedTime = currentDate.toLocaleTimeString('es-ES', { timeZone:'America/Argentina/Buenos_Aires'});
         const message = `
                         <html>
                         <head>
