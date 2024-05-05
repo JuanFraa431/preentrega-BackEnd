@@ -1,7 +1,6 @@
 // productRoutes.js
 const express = require("express");
 const router = express.Router();
-const productosController = require("../controllers/productController");
 const Product = require("../dao/models/products");
 const User = require('../dao/models/users');
 const { customizeError } = require("../middleware/errorHandler");
