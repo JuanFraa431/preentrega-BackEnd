@@ -127,7 +127,7 @@ router.post('/reset-password/:token', async (req, res) => {
         user.resetPasswordExpires = undefined;
         await user.save();
 
-        res.status(200).json({ message: 'Contraseña restablecida correctamente' });
+        res.redirect("/login")
     } catch (error) {
         logger.error('Error al restablecer la contraseña:', error);
         res.status(500).json({ message: 'Error interno del servidor' });
@@ -143,7 +143,7 @@ router.post('/reset-password', async (req, res) => {
         const user = await User.findOne({ email });
 
         if (!user) {
-            return res.status(404).json({ message: 'Usuario no encontrado' });
+            return res.status(400).json({ success: false, message: 'Usuario no encontrado' });
         }
 
         // Generar y guardar el token de restablecimiento de contraseña
@@ -155,10 +155,33 @@ router.post('/reset-password', async (req, res) => {
         // Enviar correo electrónico de restablecimiento de contraseña
         await sendPasswordResetEmail(email, resetToken);
 
-        res.status(200).json({ message: 'Correo electrónico de restablecimiento de contraseña enviado' });
+        res.redirect("/login");
     } catch (error) {
         logger.error('Error al enviar el correo electrónico de restablecimiento de contraseña:', error);
-        res.status(500).json({ message: 'Error interno del servidor' });
+        res.redirect("/login"); 
+    }
+});
+
+router.get('/check-reset-token/:email', async (req, res) => {
+    try {
+        const { email } = req.params;
+
+        // Buscar al usuario por correo electrónico
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ status: 'error', message: 'Usuario no encontrado' });
+        }
+
+        // Verificar si el usuario tiene un token de restablecimiento de contraseña
+        if (user.resetPasswordToken) {
+            return res.status(200).json({ status: 'success', message: 'El usuario tiene un token de restablecimiento de contraseña' });
+        } else {
+            return res.status(400).json({ status: 'error', message: 'El usuario no tiene un token de restablecimiento de contraseña' });
+        }
+    } catch (error) {
+        logger.error('Error al verificar el token de restablecimiento de contraseña:', error);
+        return res.status(500).json({ status: 'error', message: 'Error interno del servidor' });
     }
 });
 
