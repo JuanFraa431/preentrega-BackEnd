@@ -100,6 +100,25 @@ router.post('/premium/:uid', async (req, res) => {
     }
 });
 
+router.get('/documents/:uid', async (req, res) => {
+    try {
+        const userId = req.params.uid;
+
+        const user = await User.findById(userId);
+
+        console.log(user)
+        if (!user) {
+            return res.status(404).json({ status: 'error', message: 'Usuario no encontrado' });
+        }
+
+        return res.status(200).json({ status: 'success', documents: user.documents });
+
+    } catch (error) {
+        logger.error(error);
+        return res.status(500).json({ status: 'error', message: 'Error interno del servidor' });
+    }
+});
+
 router.get('/documents', (req, res) => {
     if (req.isAuthenticated()) {
         const userId = req.user._id;

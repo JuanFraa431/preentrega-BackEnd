@@ -95,22 +95,46 @@
         const ascendForm = document.getElementById('ascendForm');
 
         // Agregar un evento de clic al botón de ascender
-        ascendButton.addEventListener('click', function(event) {
-            // Prevenir el envío del formulario
+        ascendButton.addEventListener('click', async function(event) {
             event.preventDefault();
 
-            // Mostrar un mensaje de "Ascendiendo usuario"
-            Swal.fire({
-                title: 'Ascendiendo usuario',
-                icon: 'success',
-                showConfirmButton: false,
-                timer: 1200 // Duración en milisegundos (1 segundo)
-            });
+            const userId = ascendForm.getAttribute('action').split('/').pop();
+            console.log("este es el id", userId)
+            try {
+                const response = await fetch(`/api/users/documents/${userId}`);
+                if (!response.ok) {
+                    throw new Error('Error al verificar los documentos.');
+                }
+                const data = await response.json();
 
-            // Retrasar el envío del formulario para mostrar el Swal
-            setTimeout(function() {
-                ascendForm.submit();
-            }, 1200); // Retraso en milisegundos (1 segundo)
+                if (data.status === 'success') {
+                    Swal.fire({
+                        title: 'Ascendiendo usuario',
+                        icon: 'success',
+                        showConfirmButton: false,
+                        timer: 1200 
+                    });
+
+                    setTimeout(function() {
+                        ascendForm.submit();
+                    }, 1200); 
+                } else {
+                    Swal.fire({
+                        title: 'Imposible ascender usuario',
+                        text: 'Error en los documentos',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            } catch (error) {
+                console.log(error, "este es el error")
+                Swal.fire({
+                    title: 'Error',
+                    text: error.message,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
         });
     </script>
 </body>
