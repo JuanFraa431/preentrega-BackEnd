@@ -99,32 +99,27 @@
             event.preventDefault();
 
             const userId = ascendForm.getAttribute('action').split('/').pop();
-            console.log("este es el id", userId)
+            console.log("este es el id", userId);
             try {
                 const response = await fetch(`/api/users/documents/${userId}`);
-                if (!response.ok) {
-                    throw new Error('Error al verificar los documentos.');
-                }
-                const data = await response.json();
-
-                if (data.status === 'success') {
+                if (response.status !== 200) {
                     Swal.fire({
-                        title: 'Ascendiendo usuario',
-                        icon: 'success',
-                        showConfirmButton: false,
-                        timer: 1200 
-                    });
-
-                    setTimeout(function() {
-                        ascendForm.submit();
-                    }, 1200); 
-                } else {
-                    Swal.fire({
-                        title: 'Imposible ascender usuario',
-                        text: 'Error en los documentos',
+                        title: 'Error',
+                        text: 'Error al verificar los documentos. Carguelos nuevamente.',
                         icon: 'error',
                         confirmButtonText: 'OK'
                     });
+                } else {
+                        Swal.fire({
+                            title: 'Ascendiendo usuario',
+                            icon: 'success',
+                            showConfirmButton: false,
+                            timer: 1200 
+                        });
+
+                        setTimeout(function() {
+                            ascendForm.submit();
+                        }, 1200); 
                 }
             } catch (error) {
                 console.log(error, "este es el error")

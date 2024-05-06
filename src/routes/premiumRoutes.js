@@ -106,9 +106,18 @@ router.get('/documents/:uid', async (req, res) => {
 
         const user = await User.findById(userId);
 
-        console.log(user)
         if (!user) {
             return res.status(404).json({ status: 'error', message: 'Usuario no encontrado' });
+        }
+
+        const requiredDocuments = ['Documentacion', 'ConstanciaDireccion', 'ConstanciaCuenta'];
+        const userDocuments = user.documents.map(doc => doc.name);
+
+        // Verificar si el usuario tiene todos los documentos requeridos
+        const hasRequiredDocuments = requiredDocuments.every(doc => userDocuments.includes(doc));
+
+        if (!hasRequiredDocuments) {
+            return res.status(400).json({ status: 'error', message: 'El usuario no tiene los documentos requeridos' });
         }
 
         return res.status(200).json({ status: 'success', documents: user.documents });
