@@ -8,7 +8,10 @@ const { sendPasswordResetEmail } = require('../utils/mailService.js');
 const { generateResetToken } = require('../utils/tokens.js');
 const bcrypt = require('bcrypt');
 const {logger} = require("../utils/logger.js")
-//---------------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------------------------------------------
+// Define las rutas relacionadas con la autenticación de usuarios
+
 
 // Ruta para el registro de usuarios
 router.post('/register', async (req, res, next) => {
@@ -39,12 +42,11 @@ router.get('/githubcallback',
 // Ruta para cerrar sesión
 router.get('/logout', async (req, res) => {
     try {
-        // Asegúrate de que req.session.user contenga la información del usuario
         if (req.user.email) {
             await User.findOneAndUpdate(
                 { email: req.user.email },
                 { last_connection: new Date() }
-            ).exec(); // Ejecuta la consulta para realizar la actualización
+            ).exec();
         } else {
             logger.info('No se pudo actualizar last_connection: no se encontró información de usuario en la sesión.');
         }
@@ -67,7 +69,7 @@ router.get('/current', async (req, res) => {
         if (req.isAuthenticated()) {
             const currentUser = req.user;
 
-            // Obtener el usuario actual desde la base de datos (ajusta según tu modelo)
+            // Obtener el usuario actual desde la base de datos 
             const userFromDB = await User.findById(currentUser._id);
 
             // Verificar el rol del usuario
@@ -82,7 +84,6 @@ router.get('/current', async (req, res) => {
                 res.render('current', { user: userFromDB, isAdmin: false, message: 'Usted no tiene rango admin para acceder a este sitio' });
             }
         } else {
-            // Si no está autenticado, renderizar la vista con un mensaje apropiado
             res.render('current', { user: null });
         }
     } catch (error) {
@@ -119,7 +120,7 @@ router.post('/reset-password/:token', async (req, res) => {
         }
 
         // Encriptar la nueva contraseña
-        const hashedPassword = await bcrypt.hash(password, 10); // 10 es el número de rondas de hashing
+        const hashedPassword = await bcrypt.hash(password, 10);
 
         // Establecer la nueva contraseña encriptada y eliminar el token de restablecimiento
         user.password = hashedPassword;
@@ -149,7 +150,7 @@ router.post('/reset-password', async (req, res) => {
         // Generar y guardar el token de restablecimiento de contraseña
         const resetToken = generateResetToken();
         user.resetPasswordToken = resetToken;
-        user.resetPasswordExpires = Date.now() + 3600000; // Token válido por 1 hora
+        user.resetPasswordExpires = Date.now() + 3600000;
         await user.save();
 
         // Enviar correo electrónico de restablecimiento de contraseña

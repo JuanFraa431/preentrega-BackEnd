@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const mongoosePaginate = require('mongoose-paginate-v2');
 
+//------------------------------------------------------------------------------------------------------------------
 // Define el esquema del producto con varios campos y restricciones
 const productSchema = new mongoose.Schema({
     title: {

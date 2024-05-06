@@ -4,6 +4,7 @@ const User = require('../dao/models/users');
 const { initializePassportGitHub, initializePassportLocal } = require('../config/passport.config')
 const {logger} = require("../utils/logger")
 
+//------------------------------------------------------------------------------------------------------------------
 initializePassportLocal()
 initializePassportGitHub()
 

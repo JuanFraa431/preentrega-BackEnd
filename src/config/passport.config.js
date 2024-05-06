@@ -5,8 +5,7 @@ const bcrypt = require('bcrypt');
 const User = require('../dao/models/users');
 const { logger } = require('../utils/logger');
 
-
-
+//------------------------------------------------------------------------------------------------------------------
 exports.initializePassportGitHub = () => {
     passport.use(new GitHubStrategy({
         clientID: 'Iv1.bae1b407c6a21b7a',

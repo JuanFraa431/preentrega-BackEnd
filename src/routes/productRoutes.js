@@ -8,8 +8,8 @@ const mailService = require('../utils/mailService');
 const { logger } = require('../utils/logger');
 
 
-//---------------------------------------------------------------------------------------
-
+//------------------------------------------------------------------------------------------------------------------
+// Define las rutas relacionadas con los productos
 router.get("/", async (req, res) => {
     try {
         const user = req.user;

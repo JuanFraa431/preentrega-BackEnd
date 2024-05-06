@@ -1,5 +1,7 @@
 const winston = require( 'winston')
-    
+
+//------------------------------------------------------------------------------------------------------------------
+// Define opciones personalizadas para los niveles de registro y sus colores
 const customLevelOptions = {
         levels: {
             fatal: 0,
@@ -17,6 +19,7 @@ const customLevelOptions = {
         }
 }
 
+// Crea un nuevo logger con configuraciones personalizadas
 const logger = winston.createLogger({
     levels: customLevelOptions.levels,
     transports: [
@@ -35,6 +38,7 @@ const logger = winston.createLogger({
     ]
 })
 
+// Middleware para añadir el logger a cada solicitud
 const addLogger =(req, res, next ) => {
     req.logger = logger
     logger.info(`${req.method} Ruta: localhost:8080${req.url} - ${new Date().getDate}`)

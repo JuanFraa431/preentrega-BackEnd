@@ -11,7 +11,9 @@ require('dotenv').config();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const bodyParser = require('body-parser');
 
-//---------------------------------------------------------------------------------------
+
+//-------------------------------------------------------------------------------------------------------------------
+// Rutas para realizar la compra de productos en el carrito
 
 router.post('/:cid/purchase', async (req, res) => {
     try {

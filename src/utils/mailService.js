@@ -1,8 +1,9 @@
-// En mailServices.js
 const nodemailer = require('nodemailer');
 const User = require('../dao/models/users');
 const {logger} = require("../utils/logger")
 
+//------------------------------------------------------------------------------------------------------------------
+// Envia un correo electrónico para restablecer la contraseña del usuario
 async function sendPasswordResetEmail(email, token) {
     try {
         const user = await User.findOne({ email });
@@ -11,9 +12,8 @@ async function sendPasswordResetEmail(email, token) {
             throw new Error('Usuario no encontrado');
         }
 
-        // Guardar el token y la fecha de expiración en el usuario
         user.resetPasswordToken = token;
-        user.resetPasswordExpires = Date.now() + 3600000; // Token válido por 1 hora
+        user.resetPasswordExpires = Date.now() + 3600000; 
         await user.save();
 
         const transporter = nodemailer.createTransport({
@@ -95,6 +95,7 @@ async function sendPasswordResetEmail(email, token) {
     }
 }
 
+// Envia un correo electrónico de notificación
 async function sendNotificationEmail(email, message, subject) {
     try {
         const transporter = nodemailer.createTransport({

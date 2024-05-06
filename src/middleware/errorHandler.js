@@ -1,5 +1,6 @@
 require('dotenv').config(); 
 
+//------------------------------------------------------------------------------------------------------------------
 function customizeError(errorCode, additionalInfo = '') {
     const errorMessage = process.env[errorCode];
     if (errorMessage) {

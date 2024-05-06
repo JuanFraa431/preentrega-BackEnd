@@ -1,6 +1,7 @@
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 
+//------------------------------------------------------------------------------------------------------------------
 // Define las opciones de configuración para Swagger
 const options = {
     swaggerDefinition: {

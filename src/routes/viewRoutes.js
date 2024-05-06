@@ -1,4 +1,3 @@
-// viewRoutes.js
 const express = require('express');
 const router = express.Router();
 const session = require('express-session');
@@ -6,9 +5,8 @@ const isAuthenticated = require('../middleware/auth.middleware')
 const { customizeError } = require("../middleware/errorHandler");
 const User = require('../dao/models/users');
 
-//---------------------------------------------------------------------------------------
-
-
+//------------------------------------------------------------------------------------------------------------------
+// Define las rutas para la visualización de formularios y perfiles de usuario
 router.get('/login', (req, res) => {
     res.render('loginForm');
 });

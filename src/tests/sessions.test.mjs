@@ -1,9 +1,12 @@
 import * as chai from "chai";
 import supertest from "supertest";
 
+//------------------------------------------------------------------------------------------------------------------
 const expect = chai.expect;
 const requester = supertest("http://localhost:8080");
 
+
+// Describe el conjunto de pruebas para el enrutador de sesión
 describe('Session Router', () => {
 
     it('Debería iniciar sesión con éxito', async () => {

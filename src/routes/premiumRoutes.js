@@ -8,7 +8,9 @@ const { logger } = require('../utils/logger');
 
 
 //-------------------------------------------------------------------------------------------------------------------
+// Define las rutas relacionadas con los usuarios
 
+// Ruta para obtener la lista de usuarios
 router.get('/', async (req, res) => {
     try {
         const users = await User.find({}, { first_name: 1, email: 1, role: 1 }); 
