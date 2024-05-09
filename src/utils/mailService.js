@@ -102,7 +102,7 @@ async function sendNotificationEmail(email, message, subject) {
             service: 'gmail',
             auth: {
                 user: 'juanfraa032@gmail.com', 
-                pass: 'uoma cair nlvx uxrs' 
+                pass: 'qvwu ktmb iwyz dkmv' 
             }
         });
 
