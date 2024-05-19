@@ -105,6 +105,7 @@
                             <p class="card-text">Precio: ${{this._doc.price}}</p>
                             {{#if ../isAdminFalse}}
                                 <button onclick="addToCart('{{this._doc._id}}', '{{../user._id}}')" class="btn btn-primary">Agregar al carrito</button>
+                                <button onclick="verDetalle('{{this._doc._id}}')" class="btn btn-primary">Ver detalle del producto</button>
                             {{/if}}
                             {{#if ../isAdmin}}
                                 <button onclick="updateProduct('{{this._doc._id}}')" class="btn btn-secondary">Actualizar producto</button>

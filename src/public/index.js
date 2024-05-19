@@ -134,6 +134,10 @@ async function addToCart(productId, userId) {
     }
 }
 
+function verDetalle(productId) {
+    window.location.href = "/products/itemDetail/" + productId;
+}
+
 function redirectToCart(userId) {
     fetch(`/api/carts/${userId}`)
         .then(response => {

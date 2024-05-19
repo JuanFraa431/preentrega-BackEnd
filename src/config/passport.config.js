@@ -4,6 +4,7 @@ const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcrypt');
 const User = require('../dao/models/users');
 const { logger } = require('../utils/logger');
+const mailService = require("../utils/mailService");
 
 //------------------------------------------------------------------------------------------------------------------
 exports.initializePassportGitHub = () => {
@@ -74,6 +75,26 @@ exports.initializePassportLocal = () => {
                 };
 
                 const result = await User.create(newUser);
+                // Envío del correo electrónico al usuario registrado
+                    const message = `
+                    <html>
+                    <head>
+                        <style>
+                            /* Estilos CSS para el correo electrónico */
+                        </style>
+                    </head>
+                    <body>
+                        <p>Hola ${first_name} ${last_name},</p>
+                        <p>¡Gracias por registrarte en nuestro sitio!</p>
+                        <p>Esperamos que disfrutes de nuestros servicios.</p>
+                        <p>Saludos,</p>
+                        <p>Tu equipo</p>
+                    </body>
+                    </html>
+                `;
+                const subject = 'Registro exitoso';
+                await mailService.sendNotificationEmail(email, message, subject);
+                
                 return done(null, result);
             } catch (error) {
                 return done(error);

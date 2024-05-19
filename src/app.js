@@ -2,52 +2,33 @@ const express = require("express");
 const handlebars = require('express-handlebars')
 const app = express();
 const { Server } = require('socket.io')
-const fs = require("fs");
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const productosRoutes = require('./routes/productRoutes');
-const sessionRoutes = require('./routes/sessionRoutes');
-const viewRoutes = require('./routes/viewRoutes');
-const premiumRouter = require('./routes/premiumRoutes')
-const nodemailer = require('nodemailer');
-const mockingProductsRoute = require('./routes/mockingProductsRoutes')
-const Product = require("./dao/models/products");
-const helpers = require('./public/helpers');
 const MongoStore = require("connect-mongo")
 const session = require('express-session');
 const passport = require('passport');
-const User = require('./dao/models/users');
-const sessionController = require('./controllers/sessionController');
 require('dotenv').config()
+const path = require('path');
+
+// Importar rutas
+const sessionRoutes = require('./routes/sessionRoutes');
+const viewRoutes = require('./routes/viewRoutes');
+const premiumRouter = require('./routes/premiumRoutes')
+const mockingProductsRoute = require('./routes/mockingProductsRoutes')
+const Product = require("./dao/models/products");
+const helpers = require('./public/helpers');
+const sessionController = require('./controllers/sessionController');
 const config = require('./config/config');
 const swaggerMiddleware = require('./middleware/swagger');
 const { addLogger, logger } = require('./utils/logger.js');
-const swaggerUiExpress = require('swagger-ui-express')
-const swaggerJsDoc = require('swagger-jsdoc')
-const path = require('path');
+const productRoutes = require('./routes/productRoutes');
+const cartRoutes = require('./routes/cartRoutes');
+
 
 const PORT = config.PORT;
 const MONGO_URL = config.MONGO_URL;
 const SESSION_SECRET = config.SESSION_SECRET;
-
-
-// Define las opciones de configuración para Swagger
-const options = {
-    swaggerDefinition: {
-        openapi: '3.0.1',
-        info: {
-            title: 'API Documentation',
-            version: '1.0.0',
-            description: 'Documentación de la API de tu proyecto final',
-        },
-    },
-    apis: ['./docs/**/*.yaml'], 
-};
-
-const specs = swaggerJsDoc(options);
-// Usa el middleware de Swagger
-app.use('/apidocs', swaggerUiExpress.serve, swaggerUiExpress.setup(specs))
-
+swaggerMiddleware(app)
 
 app.use((req, res, next) => {
     if (req.url === '/') {
@@ -55,7 +36,6 @@ app.use((req, res, next) => {
     }
     next();
 });
-
 
 app.use(express.json());
 
@@ -76,9 +56,7 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-
 sessionController;
-
 
 const hbs = handlebars.create({
     extname: '.hbs',
@@ -96,12 +74,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.engine('hbs', hbs.engine);
 app.set('view engine', 'hbs');
 
-
-// Importar las rutas relacionadas con productos y carritos desde archivos externos
-
-const productRoutes = require('./routes/productRoutes');
-const cartRoutes = require('./routes/cartRoutes');
-
 // Configuración de archivos estáticos
 app.use('/mockingproducts', mockingProductsRoute);
 app.use(express.static('public'));
@@ -112,19 +84,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/api/sessions', sessionRoutes);
 app.use('/', viewRoutes);
 app.use('/api/users', premiumRouter);
-
-
-
-app.get('/home', async (req, res) => {
-    try {
-        const products = await Product.find().lean();
-        res.render('home', { products });
-    } catch (error) {
-        logger.error(error);
-        res.status(500).render('error', { message: 'Error interno del servidor', error });
-    }
-});
-
 
 // Ruta para obtener todos los productos
 app.get('/realtimeproducts', (req, res) => {
@@ -189,4 +148,3 @@ db.once('open', () => {
     logger.info('Conexión exitosa a MongoDB');
 });
 
-app.use('/api', productosRoutes);

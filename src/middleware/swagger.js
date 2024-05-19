@@ -1,5 +1,6 @@
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
+const path = require('path');
 
 //------------------------------------------------------------------------------------------------------------------
 // Define las opciones de configuración para Swagger
@@ -12,7 +13,7 @@ const options = {
             description: 'Documentación de la API de tu proyecto final',
         },
     },
-    apis: ['../docs/Users/Users.yaml'], 
+    apis: [path.join(__dirname, '../docs/**/*.yaml')], 
 };
 
 // Genera la especificación de Swagger
@@ -20,5 +21,5 @@ const specs = swaggerJsdoc(options);
 
 // Exporta un middleware para servir la documentación de Swagger
 module.exports = function(app) {
-    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+    app.use('/apidocs', swaggerUi.serve, swaggerUi.setup(specs));
 };
