@@ -59,7 +59,7 @@ exports.initializePassportLocal = () => {
 
                 const hashedPassword = await bcrypt.hash(password, 10);
 
-                let role = 'user';
+               let  role = 'user';
 
                 if (email === 'adminCoder@coder.com') {
                     role = 'admin';
