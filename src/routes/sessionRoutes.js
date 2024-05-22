@@ -3,6 +3,9 @@ const express = require('express');
 const router = express.Router();
 const usersController = require('../controllers/usersController');
 const sessionController = require('../controllers/sessionController');
+const { initializePassportGitHub, initializePassportLocal } = require('../config/passport.config')
+initializePassportLocal()
+initializePassportGitHub()
 
 router.post('/register', usersController.registerUser);
 router.post('/login', usersController.loginUser);
