@@ -27,11 +27,19 @@ exports.loginUser = (req, res, next) => {
 // Autenticación de GitHub
 exports.githubLogin = passport.authenticate('github', { scope: ['user:email'] });
 
-exports.githubCallback = passport.authenticate('github', { failureRedirect: '/' }),
-    (req, res) => {
-        res.redirect('/products');
-    };
-
+exports.githubCallback = (req, res, next) => {
+    passport.authenticate('github', { failureRedirect: '/' }, (err, user) => {
+        if (err || !user) {
+            return res.redirect('/');
+        }
+        req.logIn(user, (err) => {
+            if (err) {
+                return next(err);
+            }
+            res.redirect('/products');
+        });
+    })(req, res, next);
+};
 // Cierre de sesión de usuarios
 exports.logoutUser = async (req, res) => {
     try {
