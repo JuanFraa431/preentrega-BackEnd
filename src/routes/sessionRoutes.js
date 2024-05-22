@@ -2,11 +2,12 @@
 const express = require('express');
 const router = express.Router();
 const usersController = require('../controllers/usersController');
+const sessionController = require('../controllers/sessionController');
 
 router.post('/register', usersController.registerUser);
 router.post('/login', usersController.loginUser);
-router.get('/github', usersController.githubLogin);
-router.get('/githubcallback', usersController.githubCallback);
+router.get('/github', sessionController.githubLogin);
+router.get('/githubcallback', sessionController.githubCallback);
 router.get('/logout', usersController.logoutUser);
 router.get('/current', usersController.getCurrentUserInfo);
 router.get('/reset-password/:token', usersController.renderResetPasswordForm);

@@ -57,6 +57,14 @@ const sessionController = {
         })(req, res, next);
     },
 
+    githubLogin: (req, res, next) => {
+        passport.authenticate('github', { scope: ['user:email'] })(req, res, next);
+    },
+
+    githubCallback: (req, res, next) => {
+        passport.authenticate('github', { failureRedirect: '/login' })(req, res, next);
+    },
+
     logout: (req, res, next) => {
         try {
             req.logout();
